@@ -1,4 +1,4 @@
-# FlyRank AI Front-end Engineering Capstone
+# FlyRank AI Front-end AI Engineering Capstone
 
 This repository is being developed as part of the FlyRank AI Front-end AI Engineering track.
 
@@ -27,8 +27,16 @@ The project is currently in the initial setup phase. The technology choices and 
 
 ## Status
 
-🚧 Initial setup
+The repository is in the initial setup phase and does not contain a runnable application yet.
+
+## Getting Started
+
+The application scaffold has not been initialized yet. Setup and run instructions will be added once the Next.js project is in place.
 
 ## Project Structure
 
 The project will be organized around reusable frontend components, application features, AI integrations, and supporting utilities as development progresses.
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](./LICENSE) for details.
