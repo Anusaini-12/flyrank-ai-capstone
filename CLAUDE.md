@@ -45,3 +45,21 @@ Examples:
 - refactor: simplify implementation
 - chore: update project configuration
 - test: add tests
+
+## Project-Specific Rules
+
+- Forms must use reusable `FormField` components for labels, hints, required
+  indicators, and validation errors instead of duplicating field markup.
+
+- Validation logic must be separated into individual typed validation
+  functions for each field and a form-level validation function.
+
+- Every new validation rule must have a corresponding verification case in
+  `frontend/scripts/test-validation.mts`.
+
+- Run `npm run lint` and `npm run build` after significant AI-generated
+  changes before considering the implementation complete.
+
+- Do not accept AI-generated changes to existing metadata, configuration, or
+  project documentation without checking that they preserve the existing
+  project requirements.
