@@ -1,18 +1,13 @@
 type HealthData = {
-  service: string;
   status: string;
-  source: string;
-  checkedAt: string;
-};
-
-type HealthResponse = {
-  slideshow?: {
-    title?: string;
-  };
+  timestamp: string;
 };
 
 async function getHealthData(): Promise<HealthData> {
-  const response = await fetch("https://httpbin.org/json", {
+  const baseUrl = process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "http://localhost:3000";
+  const response = await fetch(`${baseUrl}/api/health`, {
     cache: "no-store",
   });
 
@@ -20,14 +15,7 @@ async function getHealthData(): Promise<HealthData> {
     throw new Error("Health data request failed");
   }
 
-  const payload = (await response.json()) as HealthResponse;
-
-  return {
-    service: "FlyRank AI",
-    status: "Operational",
-    source: payload.slideshow?.title ?? "External health endpoint",
-    checkedAt: new Date().toISOString(),
-  };
+  return (await response.json()) as HealthData;
 }
 
 export default async function HealthPage() {
@@ -41,16 +29,13 @@ export default async function HealthPage() {
       <h1 className="mt-1 text-2xl font-semibold text-zinc-950">Health</h1>
       <div className="mt-8 max-w-xl rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="font-semibold text-zinc-950">{health.service}</h2>
+          <h2 className="font-semibold text-zinc-950">FlyRank AI</h2>
           <span className="rounded-full bg-primary-50 px-3 py-1 text-sm font-semibold text-primary-900">
             {health.status}
           </span>
         </div>
         <p className="mt-4 text-sm text-zinc-600">
-          Fetched source: {health.source}
-        </p>
-        <p className="mt-4 text-sm text-zinc-600">
-          Last checked: {health.checkedAt}
+          Last checked: {health.timestamp}
         </p>
       </div>
     </main>
