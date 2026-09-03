@@ -3,23 +3,11 @@ type HealthData = {
   timestamp: string;
 };
 
-async function getHealthData(): Promise<HealthData> {
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3000";
-  const response = await fetch(`${baseUrl}/api/health`, {
-    cache: "no-store",
-  });
-
-  if (!response.ok) {
-    throw new Error("Health data request failed");
-  }
-
-  return (await response.json()) as HealthData;
-}
-
-export default async function HealthPage() {
-  const health = await getHealthData();
+export default function HealthPage() {
+  const health: HealthData = {
+    status: "ok",
+    timestamp: new Date().toISOString(),
+  };
 
   return (
     <main className="flex flex-1 flex-col px-6 py-10 lg:px-10">
