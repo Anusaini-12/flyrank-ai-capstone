@@ -19,7 +19,7 @@ export default function PrimaryNav() {
   ];
 
   return (
-    <header className="border-b border-border bg-background/90 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-xl">
       <nav
         aria-label="Primary navigation"
         className="mx-auto flex w-full max-w-[1440px] items-center gap-2 px-3 py-3 sm:gap-3 sm:px-5 sm:py-4 lg:px-8"

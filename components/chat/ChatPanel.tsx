@@ -133,7 +133,7 @@ export default function ChatPanel() {
   }
 
   return (
-    <section className="flex min-h-[34rem] flex-1 flex-col border-b border-border bg-card md:h-full md:min-h-0 md:basis-[30%] md:border-b-0 md:border-r lg:basis-[27%] xl:basis-[25%]">
+    <section className="flex h-[calc(100svh-73px)] min-h-0 flex-1 flex-col border-b border-border bg-card md:fixed md:bottom-0 md:left-0 md:top-[73px] md:z-30 md:h-auto md:flex-none md:w-[28%] md:border-b-0 md:border-r lg:w-[24%] xl:w-[22%]">
       <div className="border-b border-border px-6 py-6 lg:px-8">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
           AI brief builder
@@ -146,7 +146,7 @@ export default function ChatPanel() {
 
       <div
         ref={messagesContainerRef}
-        className="relative min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-7 lg:px-8"
+        className="relative min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-6 py-7 lg:px-8"
       >
         {messages.map((message) => (
           <article
@@ -198,7 +198,7 @@ export default function ChatPanel() {
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="border-t border-border bg-background p-5 lg:p-6">
+      <form onSubmit={handleSubmit} className="sticky bottom-0 z-20 shrink-0 border-t border-border bg-background/95 p-5 backdrop-blur-xl lg:p-6">
         <label htmlFor="chat-message" className="sr-only">
           Refine your request
         </label>

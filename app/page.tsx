@@ -11,7 +11,7 @@ export default function Home() {
   return (
     <main className="flex min-h-[calc(100svh-73px)] flex-1 flex-col bg-transparent md:h-[calc(100svh-73px)] md:min-h-0 md:flex-row md:overflow-hidden">
       <ChatPanel />
-      <section className="min-w-0 flex-1 overflow-y-auto px-5 py-8 lg:px-10 lg:py-10">
+      <section className="min-w-0 flex-1 overflow-y-auto px-5 py-8 md:ml-[28%] lg:ml-[24%] lg:px-10 lg:py-10 xl:ml-[22%]">
         <div className="mx-auto max-w-[1100px]">
           <header className="mb-9 flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
             <div>
