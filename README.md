@@ -14,6 +14,38 @@ This project will explore the integration of AI capabilities into a modern web a
 - Tailwind CSS
 - AI/LLM APIs
 
+## `searchProducts` Tool
+
+The `searchProducts` tool searches the mock product catalog by category, budget, and shopper priorities.
+
+### Input Schema
+
+The tool accepts a Zod object with these fields:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `category` | `string` | The product category to search for, such as laptops or headphones. |
+| `maxPrice` | `number` (optional) | The maximum acceptable price for the product. |
+| `priorities` | `string[]` (optional) | The product qualities that matter most, such as battery life or budget. |
+
+### Return Shape
+
+The tool returns an object containing a `products` list with up to three matching products:
+
+```ts
+{
+	products: Array<{
+		id: string;
+		name: string;
+		price: number;
+		batteryLife: string;
+		matchReasons: string[];
+	}>;
+}
+```
+
+Products also include their catalog `category` internally, while the fields above are the product data used by the UI.
+
 ## Development
 
 The project is currently in the initial setup phase. The technology choices and project scope may evolve as the capstone develops.

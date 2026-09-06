@@ -1,6 +1,7 @@
-import { convertToModelMessages, streamText } from "ai";
+import { convertToModelMessages, stepCountIs, streamText } from "ai";
 
 import { MODEL, SYSTEM_PROMPT } from "@/lib/ai-config";
+import { searchProductsTool } from "@/lib/tools/search-products";
 
 // This route runs server-side only, so OPENROUTER_API_KEY never reaches the browser.
 export async function POST(request: Request) {
@@ -11,7 +12,9 @@ export async function POST(request: Request) {
     model: MODEL,
     system: SYSTEM_PROMPT,
     messages: modelMessages,
-    maxOutputTokens: 1000,
+    maxOutputTokens: 800,
+    tools: { searchProducts: searchProductsTool },
+    stopWhen: stepCountIs(3),
   });
 
   return result.toUIMessageStreamResponse();

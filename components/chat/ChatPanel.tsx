@@ -1,11 +1,28 @@
 "use client";
 
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
+import type { UseChatHelpers } from "@ai-sdk/react";
+import type { InferUITools, UIMessage } from "ai";
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { Send, Square } from "lucide-react";
+import { RotateCcw, Send, Square } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+
+import ToolProductCard from "@/components/chat/ToolProductCard";
+import { searchProductsTool } from "@/lib/tools/search-products";
+
+export type ChatUIMessage = UIMessage<
+  unknown,
+  never,
+  InferUITools<{ searchProducts: typeof searchProductsTool }>
+>;
+export type ChatPanelProps = Pick<
+  UseChatHelpers<ChatUIMessage>,
+  "messages" | "sendMessage" | "status" | "stop" | "regenerate"
+>;
+type SearchProductsPart = Extract<
+  ChatUIMessage["parts"][number],
+  { type: "tool-searchProducts" }
+>;
 
 function splitMarkdownBlocks(text: string, isStreaming: boolean) {
   const completedBlocks: string[] = [];
@@ -63,10 +80,69 @@ function AssistantMessage({ text, isStreaming }: { text: string; isStreaming: bo
   );
 }
 
-export default function ChatPanel() {
-  const { messages, sendMessage, status, stop } = useChat({
-    transport: new DefaultChatTransport({ api: "/api/chat" }),
-  });
+function SearchProductsPartView({
+  part,
+  onRetry,
+}: {
+  part: SearchProductsPart;
+  onRetry: () => void;
+}) {
+  if (part.state === "input-streaming") {
+    return (
+      <div className="animate-pulse rounded-xl border border-border/70 bg-background/60 px-4 py-3 text-sm text-muted-foreground">
+        Figuring out what to search for...
+      </div>
+    );
+  }
+
+  if (part.state === "input-available") {
+    return (
+      <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
+        Searching for {part.input.category}...
+      </div>
+    );
+  }
+
+  if (part.state === "output-error") {
+    return (
+      <div className="rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-4 text-sm text-foreground">
+        <p className="font-semibold">The product search couldn&apos;t complete.</p>
+        <p className="mt-1 text-muted-foreground">Try again and we&apos;ll take another look.</p>
+        <button
+          type="button"
+          onClick={onRetry}
+          className="mt-3 inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
+        >
+          <RotateCcw className="size-3.5" />
+          Retry search
+        </button>
+      </div>
+    );
+  }
+
+  if (part.state !== "output-available") {
+    return null;
+  }
+
+  return (
+    <div className="space-y-2 rounded-xl border border-border bg-background/70 p-3">
+      <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
+        Product matches
+      </p>
+      {part.output.products.map((product) => (
+        <ToolProductCard key={product.id} product={product} />
+      ))}
+    </div>
+  );
+}
+
+export default function ChatPanel({
+  messages,
+  sendMessage,
+  status,
+  stop,
+  regenerate,
+}: ChatPanelProps) {
   const [draft, setDraft] = useState("");
   const [isAtBottom, setIsAtBottom] = useState(true);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -133,7 +209,7 @@ export default function ChatPanel() {
   }
 
   return (
-    <section className="flex h-[calc(100svh-73px)] min-h-0 flex-1 flex-col border-b border-border bg-card md:fixed md:bottom-0 md:left-0 md:top-[73px] md:z-30 md:h-auto md:flex-none md:w-[28%] md:border-b-0 md:border-r lg:w-[24%] xl:w-[22%]">
+    <section className="flex h-[calc(100dvh-73px)] min-h-0 flex-1 flex-col overflow-hidden border-b border-border bg-card md:fixed md:bottom-0 md:left-0 md:top-[73px] md:z-30 md:h-auto md:flex-none md:w-[32%] md:border-b-0 md:border-r lg:w-[28%] xl:w-[25%]">
       <div className="border-b border-border px-6 py-6 lg:px-8">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
           AI brief builder
@@ -146,7 +222,7 @@ export default function ChatPanel() {
 
       <div
         ref={messagesContainerRef}
-        className="relative min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-6   py-7"
+        className="relative min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain touch-pan-y px-6 py-7"
       >
         {messages.map((message) => (
           <article
@@ -161,13 +237,26 @@ export default function ChatPanel() {
               {message.role === "user" ? "You" : "FlyRank AI"}
             </p> */}
             {message.role === "assistant" ? (
-              <AssistantMessage
-                text={message.parts
-                  .filter((part) => part.type === "text")
-                  .map((part) => part.text)
-                  .join("")}
-                isStreaming={isGenerating}
-              />
+              <>
+                <AssistantMessage
+                  text={message.parts
+                    .filter((part) => part.type === "text")
+                    .map((part) => part.text)
+                    .join("")}
+                  isStreaming={isGenerating}
+                />
+                <div className="mt-4 space-y-3">
+                  {message.parts.map((part, index) =>
+                    part.type === "tool-searchProducts" ? (
+                      <SearchProductsPartView
+                        key={`${message.id}-search-${index}`}
+                        part={part}
+                        onRetry={() => void regenerate()}
+                      />
+                    ) : null,
+                  )}
+                </div>
+              </>
             ) : (
               <div className="min-w-0 break-words text-[15px] leading-7">
                 {message.parts.map((part, index) =>
