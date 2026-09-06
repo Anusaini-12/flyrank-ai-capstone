@@ -1,23 +1,126 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { Send, Square } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
-const initialMessages = [
-  {
-    author: "You",
-    text: "I need a lightweight laptop for travel and long work sessions.",
-  },
-  {
-    author: "FlyRank AI",
-    text: "I found two strong options. I will weigh portability, price, and battery life as we refine the brief.",
-  },
-];
+function splitMarkdownBlocks(text: string, isStreaming: boolean) {
+  const completedBlocks: string[] = [];
+  const currentLines: string[] = [];
+  let insideCodeFence = false;
+
+  for (const line of text.split(/\r?\n/)) {
+    if (/^\s*(```|~~~)/.test(line)) {
+      insideCodeFence = !insideCodeFence;
+    }
+
+    currentLines.push(line);
+
+    
+    if (line.trim() === "" && !insideCodeFence) {
+      const block = currentLines.join("\n").trim();
+
+      if (block) {
+        completedBlocks.push(block);
+      }
+
+      currentLines.length = 0;
+    }
+  }
+
+  const pendingBlock = currentLines.join("\n").trim();
+
+  if (!isStreaming && pendingBlock) {
+    completedBlocks.push(pendingBlock);
+  }
+
+  return {
+    completedBlocks,
+    pendingBlock: isStreaming ? pendingBlock : "",
+  };
+}
+
+function AssistantMessage({ text, isStreaming }: { text: string; isStreaming: boolean }) {
+  const { completedBlocks, pendingBlock } = splitMarkdownBlocks(
+    text,
+    isStreaming,
+  );
+
+  return (
+    <div className="markdown-content min-w-0 max-w-full space-y-3 break-words text-[15px] leading-7">
+      {completedBlocks.map((block, index) => (
+        <ReactMarkdown key={`markdown-block-${index}`} remarkPlugins={[remarkGfm]}>
+          {block}
+        </ReactMarkdown>
+      ))}
+      {pendingBlock && (
+        <p className="whitespace-pre-wrap">{pendingBlock}</p>
+      )}
+    </div>
+  );
+}
 
 export default function ChatPanel() {
-  const [messages, setMessages] = useState(initialMessages);
+  const { messages, sendMessage, status, stop } = useChat({
+    transport: new DefaultChatTransport({ api: "/api/chat" }),
+  });
   const [draft, setDraft] = useState("");
+  const [isAtBottom, setIsAtBottom] = useState(true);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const isAtBottomRef = useRef(true);
+  const isGenerating = status === "submitted" || status === "streaming";
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    const scrollContainer = container;
+
+    function handleScroll() {
+      const atBottom =
+        scrollContainer.scrollHeight -
+          scrollContainer.scrollTop -
+          scrollContainer.clientHeight <=
+        8;
+
+      isAtBottomRef.current = atBottom;
+      setIsAtBottom((currentIsAtBottom) =>
+        currentIsAtBottom === atBottom ? currentIsAtBottom : atBottom,
+      );
+    }
+
+    scrollContainer.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => scrollContainer.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+
+    if (container && isAtBottomRef.current) {
+      container.scrollTop = container.scrollHeight;
+    }
+  }, [messages]);
+
+  function jumpToLatest() {
+    const container = messagesContainerRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    isAtBottomRef.current = true;
+    setIsAtBottom(true);
+    container.scrollTo({ top: container.scrollHeight, behavior: "auto" });
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const message = draft.trim();
 
@@ -25,61 +128,106 @@ export default function ChatPanel() {
       return;
     }
 
-    setMessages((currentMessages) => [
-      ...currentMessages,
-      { author: "You", text: message },
-    ]);
     setDraft("");
+    await sendMessage({ text: message });
   }
 
   return (
-    <section className="flex min-h-[32rem] flex-1 flex-col border-b border-zinc-200 bg-zinc-50 md:min-h-0 md:basis-[38%] md:border-b-0 md:border-r">
-      <div className="border-b border-zinc-200 px-6 py-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0F6E56]">
-          Conversation
+    <section className="flex min-h-[34rem] flex-1 flex-col border-b border-border bg-card md:h-full md:min-h-0 md:basis-[30%] md:border-b-0 md:border-r lg:basis-[27%] xl:basis-[25%]">
+      <div className="border-b border-border px-6 py-6 lg:px-8">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+          AI brief builder
         </p>
-        <h2 className="mt-1 text-xl font-semibold text-zinc-950">
+        <h2 className="mt-2 text-2xl font-bold tracking-tight text-foreground">
           Chat &amp; refinement
         </h2>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">Tell us what matters. We&apos;ll narrow the field.</p>
       </div>
 
-      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-6">
-        {messages.map((message, index) => (
+      <div
+        ref={messagesContainerRef}
+        className="relative min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-7 lg:px-8"
+      >
+        {messages.map((message) => (
           <article
-            key={`${message.author}-${index}`}
+            key={message.id}
             className={
-              message.author === "You"
-                ? "ml-8 rounded-2xl rounded-br-sm bg-[#0F6E56] px-4 py-3 text-white"
-                : "mr-8 rounded-2xl rounded-bl-sm border border-zinc-200 bg-white px-4 py-3 text-zinc-700"
+              message.role === "user"
+                ? "ml-8 min-w-0 max-w-[calc(100%-2rem)] rounded-2xl rounded-br-sm bg-primary px-5 py-4 text-primary-foreground shadow-lg shadow-primary/10"
+                : "mr-8 min-w-0 max-w-[calc(100%-2rem)] rounded-2xl rounded-bl-sm border border-border bg-muted px-5 py-4 text-foreground"
             }
           >
-            <p className="mb-1 text-xs font-semibold uppercase tracking-wide opacity-70">
-              {message.author}
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.14em] opacity-60">
+              {message.role === "user" ? "You" : "FlyRank AI"}
             </p>
-            <p className="text-sm leading-6">{message.text}</p>
+            {message.role === "assistant" ? (
+              <AssistantMessage
+                text={message.parts
+                  .filter((part) => part.type === "text")
+                  .map((part) => part.text)
+                  .join("")}
+                isStreaming={isGenerating}
+              />
+            ) : (
+              <div className="min-w-0 space-y-1 break-words text-[15px] leading-7">
+                {message.parts.map((part, index) =>
+                  part.type === "text" ? (
+                    <p key={`${message.id}-${index}`}>{part.text}</p>
+                  ) : null,
+                )}
+              </div>
+            )}
           </article>
         ))}
+        {status === "submitted" && (
+          <article className="mr-8 min-w-0 max-w-[calc(100%-2rem)] rounded-2xl rounded-bl-sm border border-border bg-muted px-5 py-4 text-foreground transition-opacity duration-300">
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.14em] opacity-60">
+              FlyRank AI
+            </p>
+            <p className="text-[15px] leading-7 text-muted-foreground">Thinking...</p>
+          </article>
+        )}
+        {!isAtBottom && (
+          <button
+            type="button"
+            onClick={jumpToLatest}
+            className="sticky bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full border border-border bg-secondary px-4 py-2 text-xs font-bold text-secondary-foreground shadow-xl transition-colors hover:border-primary hover:text-primary"
+          >
+            Jump to latest
+          </button>
+        )}
       </div>
 
-      <form onSubmit={handleSubmit} className="border-t border-zinc-200 bg-white p-4">
+      <form onSubmit={handleSubmit} className="border-t border-border bg-background p-5 lg:p-6">
         <label htmlFor="chat-message" className="sr-only">
           Refine your request
         </label>
-        <div className="flex items-center gap-2 rounded-xl border border-zinc-300 bg-white p-1.5 shadow-sm focus-within:border-[#0F6E56] focus-within:ring-1 focus-within:ring-[#0F6E56]">
+        <div className="flex items-center gap-2 rounded-2xl border border-input bg-background p-2 shadow-xl shadow-foreground/10 focus-within:border-primary/70 focus-within:ring-2 focus-within:ring-primary/15">
           <input
             id="chat-message"
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             placeholder="Refine your request..."
-            className="min-w-0 flex-1 bg-transparent px-2 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-400"
+            className="min-w-0 flex-1 bg-transparent px-3 py-3 text-[15px] text-foreground outline-none placeholder:text-muted-foreground"
           />
           <button
             type="submit"
-            className="rounded-lg bg-[#0F6E56] px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#0b5945] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex items-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/85 disabled:cursor-not-allowed disabled:opacity-50"
             disabled={!draft.trim()}
           >
-            Send
+            <Send className="size-4" />
+            <span className="hidden sm:inline">Send</span>
           </button>
+          {isGenerating && (
+            <button
+              type="button"
+              onClick={() => void stop()}
+              className="flex items-center gap-2 rounded-xl border border-border px-4 py-3 text-sm font-bold text-muted-foreground transition-colors hover:border-destructive hover:text-destructive"
+            >
+              <Square className="size-3.5 fill-current" />
+              <span className="hidden sm:inline">Stop</span>
+            </button>
+          )}
         </div>
       </form>
     </section>

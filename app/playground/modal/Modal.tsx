@@ -91,14 +91,14 @@ export default function Modal({
     <>
       <button
         type="button"
-        className="rounded-lg bg-[#0F6E56] px-5 py-3 text-lg font-semibold text-white shadow-sm transition-colors hover:bg-[#0b5945] focus:outline-none focus:ring-2 focus:ring-[#0F6E56] focus:ring-offset-2"
+        className="rounded-lg bg-primary px-5 py-3 text-lg font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/85 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
         onClick={() => setIsOpen(true)}
       >
         {trigger}
       </button>
 
       {isOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/50 p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50 p-6">
           <div
             ref={dialogRef}
             id={modalId}
@@ -107,22 +107,22 @@ export default function Modal({
             aria-labelledby={titleId}
             tabIndex={-1}
             onKeyDown={handleKeyDown}
-            className="w-full max-w-lg rounded-2xl bg-white p-7 shadow-2xl outline-none lg:p-8"
+            className="w-full max-w-lg rounded-2xl border border-border bg-card p-7 text-card-foreground shadow-2xl outline-none lg:p-8"
           >
             <div className="flex items-start justify-between gap-6">
-              <h2 id={titleId} className="text-2xl font-semibold text-zinc-950">
+              <h2 id={titleId} className="text-2xl font-semibold text-foreground">
                 {title}
               </h2>
               <button
                 type="button"
                 aria-label="Close dialog"
-                className="rounded-lg px-3 py-2 text-lg font-semibold text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-950 focus:outline-none focus:ring-2 focus:ring-[#0F6E56]"
+                className="rounded-lg px-3 py-2 text-lg font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 onClick={() => setIsOpen(false)}
               >
                 Close
               </button>
             </div>
-            <div className="mt-5 text-base leading-7 text-zinc-600">{children}</div>
+            <div className="mt-5 text-base leading-7 text-muted-foreground">{children}</div>
           </div>
         </div>
       ) : null}

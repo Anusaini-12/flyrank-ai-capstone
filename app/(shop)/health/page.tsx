@@ -10,19 +10,19 @@ export default function HealthPage() {
   };
 
   return (
-    <main className="flex flex-1 flex-col px-6 py-10 lg:px-10">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-600">
+    <main className="flex flex-1 flex-col px-5 py-12 lg:px-10">
+      <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
         System status
       </p>
-      <h1 className="mt-1 text-2xl font-semibold text-zinc-950">Health</h1>
-      <div className="mt-8 max-w-xl rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+      <h1 className="mt-3 text-4xl font-bold tracking-tight text-foreground">Health</h1>
+      <div className="mt-8 max-w-xl rounded-3xl border border-border bg-card p-7 shadow-2xl shadow-foreground/10">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="font-semibold text-zinc-950">FlyRank AI</h2>
-          <span className="rounded-full bg-primary-50 px-3 py-1 text-sm font-semibold text-primary-900">
+          <h2 className="text-lg font-bold text-foreground">FlyRank AI</h2>
+          <span className="rounded-full border border-primary/25 bg-accent px-3 py-1 text-sm font-bold text-accent-foreground">
             {health.status}
           </span>
         </div>
-        <p className="mt-4 text-sm text-zinc-600">
+        <p className="mt-5 text-sm text-muted-foreground">
           Last checked: {health.timestamp}
         </p>
       </div>

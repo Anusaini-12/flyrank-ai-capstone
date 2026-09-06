@@ -71,7 +71,7 @@ export default function Tabs({
       <div
         role="tablist"
         aria-label="Tabs"
-        className="flex flex-wrap gap-2 border-b border-zinc-200"
+        className="flex flex-wrap gap-2 border-b border-border"
       >
         {tabs.map((tab, tabIndex) => {
           const tabId = `${tabsId}-tab-${tab.id}`;
@@ -92,8 +92,8 @@ export default function Tabs({
               tabIndex={isSelected ? 0 : -1}
               className={
                 isSelected
-                  ? "border-b-2 border-[#0F6E56] px-5 py-3 text-lg font-semibold text-[#0F6E56]"
-                  : "border-b-2 border-transparent px-5 py-3 text-lg font-medium text-zinc-500 transition-colors hover:text-zinc-900 focus:outline-none focus:ring-2 focus:ring-[#0F6E56] focus:ring-offset-2"
+                  ? "border-b-2 border-primary px-5 py-3 text-lg font-semibold text-primary"
+                  : "border-b-2 border-transparent px-5 py-3 text-lg font-medium text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               }
               onClick={() => selectTab(tab.id, tabIndex)}
               onKeyDown={(event) => handleKeyDown(event, tabIndex)}

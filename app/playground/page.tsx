@@ -21,36 +21,36 @@ import {
 
 export default function PlaygroundPage() {
   return (
-    <main className="min-h-full bg-[#eef8f4] px-6 py-12 lg:px-12 lg:py-16">
+    <main className="min-h-full bg-background px-6 py-12 text-foreground lg:px-12 lg:py-16">
       <div className="mx-auto max-w-4xl space-y-10">
         <header className="space-y-3">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#0F6E56]">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
             UI components
           </p>
-          <h1 className="text-4xl font-semibold tracking-tight text-zinc-950 lg:text-5xl">
+          <h1 className="text-4xl font-semibold tracking-tight text-foreground lg:text-5xl">
             Component Playground
           </h1>
-          <p className="max-w-2xl text-lg leading-8 text-zinc-600">
+          <p className="max-w-2xl text-lg leading-8 text-muted-foreground">
             Explore the interactive building blocks used across the application.
           </p>
         </header>
 
-        <section className="space-y-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm lg:p-8">
+        <section className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm lg:p-8">
           <div>
-            <h2 className="text-2xl font-semibold text-zinc-950">Disclosure</h2>
-            <p className="mt-1 text-base text-zinc-600">Expandable content</p>
+            <h2 className="text-2xl font-semibold text-foreground">Disclosure</h2>
+            <p className="mt-1 text-base text-muted-foreground">Expandable content</p>
           </div>
           <Disclosure title="Show sample content">
-            <p className="mt-4 max-w-md text-base leading-7 text-zinc-600">
+            <p className="mt-4 max-w-md text-base leading-7 text-muted-foreground">
               This content is hidden until you activate the disclosure button.
             </p>
           </Disclosure>
         </section>
 
-        <section className="space-y-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm lg:p-8">
+        <section className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm lg:p-8">
           <div>
-            <h2 className="text-2xl font-semibold text-zinc-950">Tabs</h2>
-            <p className="mt-1 text-base text-zinc-600">Organized content panels</p>
+            <h2 className="text-2xl font-semibold text-foreground">Tabs</h2>
+            <p className="mt-1 text-base text-muted-foreground">Organized content panels</p>
           </div>
           <Tabs
             tabs={[
@@ -58,7 +58,7 @@ export default function PlaygroundPage() {
                 id: "overview",
                 label: "Overview",
                 content: (
-                  <p className="mt-5 max-w-md text-base leading-7 text-zinc-600">
+                  <p className="mt-5 max-w-md text-base leading-7 text-muted-foreground">
                     This is the overview panel for the component playground.
                   </p>
                 ),
@@ -67,7 +67,7 @@ export default function PlaygroundPage() {
                 id: "features",
                 label: "Features",
                 content: (
-                  <p className="mt-5 max-w-md text-base leading-7 text-zinc-600">
+                  <p className="mt-5 max-w-md text-base leading-7 text-muted-foreground">
                     Tabs support selection, keyboard navigation, and accessible relationships.
                   </p>
                 ),
@@ -76,7 +76,7 @@ export default function PlaygroundPage() {
                 id: "notes",
                 label: "Notes",
                 content: (
-                  <p className="mt-5 max-w-md text-base leading-7 text-zinc-600">
+                  <p className="mt-5 max-w-md text-base leading-7 text-muted-foreground">
                     Use the arrow keys to move between tabs, or Home and End to jump.
                   </p>
                 ),
@@ -85,42 +85,42 @@ export default function PlaygroundPage() {
           />
         </section>
 
-        <section className="space-y-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm lg:p-8">
+        <section className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm lg:p-8">
           <div>
-            <h2 className="text-2xl font-semibold text-zinc-950">Modal</h2>
-            <p className="mt-1 text-base text-zinc-600">Focused dialog content</p>
+            <h2 className="text-2xl font-semibold text-foreground">Modal</h2>
+            <p className="mt-1 text-base text-muted-foreground">Focused dialog content</p>
           </div>
           <Modal trigger="Open sample modal" title="Sample modal">
             <p>
               This dialog moves focus inside when it opens and returns focus to
               the trigger when it closes.
             </p>
-            <label className="mt-5 block text-base font-semibold text-zinc-900">
+            <label className="mt-5 block text-base font-semibold text-foreground">
               Sample input
               <input
                 type="text"
                 placeholder="Type something"
-                className="mt-2 block w-full rounded-lg border border-zinc-300 px-4 py-3 text-base font-normal text-zinc-900 outline-none focus:border-[#0F6E56] focus:ring-2 focus:ring-[#0F6E56]"
+                className="mt-2 block w-full rounded-lg border border-input bg-background px-4 py-3 text-base font-normal text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary"
               />
             </label>
           </Modal>
         </section>
 
-        <section className="space-y-8 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-6 shadow-sm lg:p-8">
+        <section className="space-y-8 rounded-2xl border border-primary/20 bg-accent p-6 shadow-sm lg:p-8">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#0F6E56]">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
               shadcn/ui
             </p>
-            <h2 className="mt-2 text-2xl font-semibold text-zinc-950">
+            <h2 className="mt-2 text-2xl font-semibold text-foreground">
               Dialog and Tabs
             </h2>
-            <p className="mt-1 text-base text-zinc-600">
+            <p className="mt-1 text-base text-muted-foreground">
               Compare the generated primitives with the custom components above.
             </p>
           </div>
 
           <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-zinc-950">Dialog</h3>
+            <h3 className="text-lg font-semibold text-foreground">Dialog</h3>
             <Dialog>
               <DialogTrigger render={<Button size="lg" />}>Open shadcn dialog</DialogTrigger>
               <DialogContent>
@@ -149,20 +149,20 @@ export default function PlaygroundPage() {
           </div>
 
           <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-zinc-950">Tabs</h3>
+            <h3 className="text-lg font-semibold text-foreground">Tabs</h3>
             <ShadcnTabs defaultValue="overview" className="max-w-xl">
               <TabsList variant="line" className="w-full justify-start">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="details">Details</TabsTrigger>
                 <TabsTrigger value="notes">Notes</TabsTrigger>
               </TabsList>
-              <TabsContent value="overview" className="pt-5 text-base leading-7 text-zinc-600">
+              <TabsContent value="overview" className="pt-5 text-base leading-7 text-muted-foreground">
                 This is the overview panel from the shadcn/ui Tabs primitive.
               </TabsContent>
-              <TabsContent value="details" className="pt-5 text-base leading-7 text-zinc-600">
+              <TabsContent value="details" className="pt-5 text-base leading-7 text-muted-foreground">
                 The generated Tabs component provides accessible tab and panel relationships.
               </TabsContent>
-              <TabsContent value="notes" className="pt-5 text-base leading-7 text-zinc-600">
+              <TabsContent value="notes" className="pt-5 text-base leading-7 text-muted-foreground">
                 Use the arrow keys to move between tabs and test the roving focus behavior.
               </TabsContent>
             </ShadcnTabs>

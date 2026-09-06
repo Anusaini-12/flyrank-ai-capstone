@@ -23,7 +23,7 @@ export default function Disclosure({
     <div>
       <button
         type="button"
-        className="rounded-lg border border-zinc-300 bg-white px-5 py-3 text-lg font-semibold text-zinc-900 shadow-sm transition-colors hover:border-[#0F6E56] hover:text-[#0F6E56] focus:outline-none focus:ring-2 focus:ring-[#0F6E56] focus:ring-offset-2"
+        className="rounded-lg border border-border bg-card px-5 py-3 text-lg font-semibold text-foreground shadow-sm transition-colors hover:border-primary hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
         aria-expanded={isOpen}
         aria-controls={contentId}
         onClick={() => setIsOpen((currentIsOpen) => !currentIsOpen)}
