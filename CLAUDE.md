@@ -45,3 +45,10 @@ Examples:
 - refactor: simplify implementation
 - chore: update project configuration
 - test: add tests
+
+## Lessons from AI Workflow Comparison
+
+- When importing .ts/.mts files in scripts, omit the file extension in the import path — this project isn't configured to allow TypeScript extensions in imports (causes TS5097).
+- After any AI-generated change to layout.tsx or app metadata, verify the title/description weren't reset to Next.js defaults ("Create Next App") — check this explicitly, don't assume it's untouched.
+- For forms with multiple validated fields, prefer one validator function per field (validateEmail, validateDisplayName, etc.) over a single generic validation function — improves type safety and makes each rule independently testable.
+- After any AI-generated change, run a full production build (npm run build), not just the dev server — dev mode didn't surface the TS5097 error, the production build did.
