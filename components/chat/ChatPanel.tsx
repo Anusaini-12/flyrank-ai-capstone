@@ -146,20 +146,20 @@ export default function ChatPanel() {
 
       <div
         ref={messagesContainerRef}
-        className="relative min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-6 py-7 lg:px-8"
+        className="relative min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-6   py-7"
       >
         {messages.map((message) => (
           <article
             key={message.id}
             className={
               message.role === "user"
-                ? "ml-8 min-w-0 max-w-[calc(100%-2rem)] rounded-2xl rounded-br-sm bg-primary px-5 py-4 text-primary-foreground shadow-lg shadow-primary/10"
-                : "mr-8 min-w-0 max-w-[calc(100%-2rem)] rounded-2xl rounded-bl-sm border border-border bg-muted px-5 py-4 text-foreground"
+                ? "ml-4 min-w-0 max-w-[calc(100%-1rem)] rounded-xl rounded-bl-sm rounded-tr-sm bg-primary px-5 py-2 text-primary-foreground shadow-lg shadow-primary/10"
+                : "mr-4 min-w-0 max-w-[calc(100%-1rem)] rounded-xl rounded-bl-sm rounded-tr-sm border border-border bg-muted px-3 py-4 text-foreground"
             }
           >
-            <p className="mb-2 text-xs font-bold uppercase tracking-[0.14em] opacity-60">
+            {/* <p className="text-[8px] font-bold uppercase tracking-[0.14em] opacity-60">
               {message.role === "user" ? "You" : "FlyRank AI"}
-            </p>
+            </p> */}
             {message.role === "assistant" ? (
               <AssistantMessage
                 text={message.parts
@@ -169,7 +169,7 @@ export default function ChatPanel() {
                 isStreaming={isGenerating}
               />
             ) : (
-              <div className="min-w-0 space-y-1 break-words text-[15px] leading-7">
+              <div className="min-w-0 break-words text-[15px] leading-7">
                 {message.parts.map((part, index) =>
                   part.type === "text" ? (
                     <p key={`${message.id}-${index}`}>{part.text}</p>

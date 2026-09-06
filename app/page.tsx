@@ -25,7 +25,7 @@ export default function Home() {
             </div>
           </header>
 
-          <div className="grid gap-5 xl:grid-cols-3">
+          <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
             {products.map((product) => (
               <article key={product.name} className="group overflow-hidden rounded-3xl border border-border bg-card shadow-2xl shadow-foreground/10 transition-transform duration-300 hover:-translate-y-1 hover:border-primary/50">
                 <div className={`relative m-2 flex h-48 items-center justify-center overflow-hidden rounded-2xl border border-border ${product.tone === "pink" ? "bg-accent" : "bg-secondary"}`}>

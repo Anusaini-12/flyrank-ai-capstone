@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     model: MODEL,
     system: SYSTEM_PROMPT,
     messages: modelMessages,
-    maxOutputTokens: 2048,
+    maxOutputTokens: 1000,
   });
 
   return result.toUIMessageStreamResponse();
