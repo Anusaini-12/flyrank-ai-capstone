@@ -2,7 +2,16 @@
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { ArrowUpRight, BatteryCharging, Check, Sparkles, Wallet } from "lucide-react";
+import { useState } from "react";
+import {
+  ArrowUpRight,
+  BatteryCharging,
+  Check,
+  Sparkles,
+  Wallet,
+  PackageSearch,
+  LayoutList
+} from "lucide-react";
 
 import ChatPanel, { type ChatUIMessage } from "@/components/chat/ChatPanel";
 
@@ -22,64 +31,243 @@ function getLatestSearchProducts(messages: ChatUIMessage[]) {
   return [];
 }
 
+function ProductImage({
+  image,
+  name,
+  isFeatured,
+}: {
+  image?: string;
+  name: string;
+  isFeatured: boolean;
+}) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const avatarClassName = `text-8xl font-black tracking-tighter opacity-20 ${isFeatured ? "text-primary" : "text-foreground"}`;
+
+  if (!image || imageFailed) {
+    return <span className={avatarClassName}>{name.charAt(0)}</span>;
+  }
+
+  return (
+    <div className="flex size-full items-center justify-center bg-white/90 p-4">
+      <img
+        src={image}
+        alt={name}
+        onError={() => setImageFailed(true)}
+        className="h-full w-full object-contain"
+      />
+    </div>
+  );
+}
+
 export default function Home() {
   const { messages, sendMessage, status, stop, regenerate } = useChat<ChatUIMessage>({
     transport: new DefaultChatTransport({ api: "/api/chat" }),
   });
+
   const searchProducts = getLatestSearchProducts(messages);
 
   return (
-    <main className="flex min-h-[calc(100dvh-73px)] flex-1 flex-col bg-transparent md:h-[calc(100dvh-73px)] md:min-h-0 md:flex-row md:overflow-hidden">
-      <ChatPanel
-        messages={messages}
-        sendMessage={sendMessage}
-        status={status}
-        stop={stop}
-        regenerate={regenerate}
-      />
-      <section className="min-w-0 flex-1 overflow-y-auto px-5 py-8 md:ml-[32%] lg:ml-[28%] lg:px-10 lg:py-10 xl:ml-[25%]">
-        <div className="mx-auto max-w-[1100px]">
-          <header className="mb-9 flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
-            <div>
-              <div className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-primary"><Sparkles className="size-4" />Product shortlist</div>
-              <h1 className="text-4xl font-bold tracking-[-0.03em] text-foreground lg:text-5xl">Decision board</h1>
-              <p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">A clear view of the products that best match your current brief.</p>
+    <main className="flex min-h-[calc(100dvh-73px)] w-full flex-col bg-background text-foreground md:h-[calc(100dvh-73px)] md:flex-row md:overflow-hidden">
+
+      {/* Sidebar: Chat Panel */}
+      <aside className="flex h-[50dvh] w-full flex-col border-b border-border bg-card/50 md:h-full md:w-[350px] md:flex-shrink-0 md:border-b-0 md:border-r z-10 shadow-sm">
+        <ChatPanel
+          messages={messages}
+          sendMessage={sendMessage}
+          status={status}
+          stop={stop}
+          regenerate={regenerate}
+        />
+      </aside>
+
+      {/* Main Content: Decision Board */}
+      <section className="flex-1 overflow-y-auto bg-muted/10 p-6 md:p-12">
+        <div className="mx-auto max-w-[1000px]">
+
+          {/* Header */}
+          <header className="mb-12 flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold tracking-wide text-primary">
+                <Sparkles className="size-3.5" />
+                Product Shortlist
+              </div>
+              <h1 className="text-3xl font-semibold text-foreground sm:text-4xl lg:text-5xl">
+                Decision Board
+              </h1>
+              <p className="max-w-xl text-base text-muted-foreground">
+                A curated view of the products that best match your current brief and preferences.
+              </p>
             </div>
-            <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
-              <span className="flex size-9 items-center justify-center rounded-xl bg-accent text-accent-foreground"><Check className="size-5" /></span>
-              <span><strong className="block text-foreground">{searchProducts.length} strong matches</strong>{searchProducts.length > 0 ? "Updated just now" : "Waiting for your brief"}</span>
+
+            <div className="flex w-fit items-center gap-4 rounded-2xl border border-border bg-card p-2 pr-5 shadow-sm">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Check className="size-5" />
+              </div>
+              <div className="text-sm">
+                <strong className="block font-semibold text-foreground">
+                  {searchProducts.length} strong matches
+                </strong>
+                <span className="text-muted-foreground">
+                  {searchProducts.length > 0 ? "Updated just now" : "Waiting for your brief"}
+                </span>
+              </div>
             </div>
           </header>
 
-          <div className="grid gap-5 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-            {searchProducts.length > 0 ? searchProducts.map((product, index) => (
-              <article key={product.name} className="group overflow-hidden rounded-3xl border border-border bg-card shadow-2xl shadow-foreground/10 transition-transform duration-300 hover:-translate-y-1 hover:border-primary/50">
-                <div className={`relative m-2 flex h-48 items-center justify-center overflow-hidden rounded-2xl border border-border ${index === 0 ? "bg-accent" : "bg-secondary"}`}>
-                  <div className="absolute left-5 top-5 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground"><span className="size-2 rounded-full bg-primary" />Match signal</div>
-                  <span className={`text-7xl font-bold tracking-[-0.08em] ${index === 0 ? "text-primary/80" : "text-secondary-foreground/80"}`}>{product.name.charAt(0)}</span>
-                  <span className="absolute right-4 top-4 rounded-full border border-border bg-background/80 px-3 py-1.5 text-sm font-bold text-foreground backdrop-blur-sm">Recommended</span>
+          {/* Product Cards Grid */}
+          <div className="grid gap-6 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+            {searchProducts.length > 0 ? (
+              searchProducts.map((product, index) => (
+                <article
+                  key={product.name}
+                  className="group relative flex flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-primary/5"
+                >
+                  {/* Card Image/Avatar Area */}
+                  <div className={`relative m-2 flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-border/50 ${index === 0
+                      ? "bg-gradient-to-br from-primary/20 via-primary/5 to-transparent"
+                      : "bg-gradient-to-br from-muted via-muted/50 to-transparent"
+                    }`}>
+                    <div className="absolute left-4 top-4 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      <span className={`size-2 rounded-full ${index === 0 ? "bg-primary animate-pulse" : "bg-muted-foreground/50"}`} />
+                      Signal
+                    </div>
+
+                    <ProductImage
+                      image={product.image}
+                      name={product.name}
+                      isFeatured={index === 0}
+                    />
+
+                    {index === 0 && (
+                      <span className="absolute right-3 top-3 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary backdrop-blur-md">
+                        Top Pick
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Card Content */}
+                  <div className="flex flex-1 flex-col p-6 pt-4">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-2 line-clamp-1">
+                      {product.matchReasons[0] ?? "Recommended match"}
+                    </p>
+                    <h2 className="text-xl font-bold tracking-tight text-foreground line-clamp-1">
+                      {product.name}
+                    </h2>
+
+                    <div className="mt-4 flex items-end justify-between gap-4">
+                      <p className="text-3xl font-bold tracking-tight text-foreground">
+                        ${product.price.toLocaleString()}
+                      </p>
+                      <span className="flex items-center gap-1.5 rounded-lg bg-muted/50 px-2.5 py-1 text-sm font-medium text-muted-foreground">
+                        <BatteryCharging className="size-4 text-primary" />
+                        {product.batteryLife}
+                      </span>
+                    </div>
+
+                    <a
+                      href={product.link}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-auto pt-6"
+                    >
+                      <div className="flex w-full items-center justify-center gap-2 rounded-xl bg-secondary px-4 py-3 text-sm font-semibold text-secondary-foreground transition-all group-hover:bg-primary group-hover:text-primary-foreground">
+                        View Details
+                        <ArrowUpRight className="size-4" />
+                      </div>
+                    </a>
+                  </div>
+                </article>
+              ))
+            ) : (
+              /* Empty State */
+              <div className="col-span-full flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-border bg-card/50 px-6 py-20 text-center">
+                <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-muted">
+                  <PackageSearch className="size-8 text-muted-foreground" />
                 </div>
-                <div className="p-6">
-                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">{product.matchReasons[0] ?? "Recommended match"}</p>
-                  <h2 className="mt-3 text-2xl font-bold tracking-tight text-foreground">{product.name}</h2>
-                  <div className="mt-5 flex items-end justify-between gap-4"><p className="text-3xl font-bold tracking-tight text-foreground">${product.price.toLocaleString()}</p><span className="flex items-center gap-2 text-sm font-medium text-muted-foreground"><BatteryCharging className="size-4 text-primary" />{product.batteryLife}</span></div>
-                  <a href={`#${product.name.toLowerCase().replaceAll(" ", "-")}`} className="mt-6 flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-3 text-sm font-bold text-foreground transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground">View product details<ArrowUpRight className="size-4" /></a>
-                </div>
-              </article>
-            )) : (
-              <div className="col-span-full rounded-3xl border border-dashed border-primary/30 bg-accent/40 px-6 py-12 text-center">
-                <p className="text-lg font-semibold text-foreground">Start a conversation to see matches here</p>
-                <p className="mt-2 text-sm text-muted-foreground">Tell us what you are shopping for and what matters most.</p>
+                <h3 className="text-lg font-semibold text-foreground">Awaiting your criteria</h3>
+                <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+                  Start a conversation in the panel to describe what you're looking for. Your personalized matches will appear here.
+                </p>
               </div>
             )}
           </div>
 
+          {/* Comparison Table */}
           {searchProducts.length > 0 && (
-            <section className="mt-7 overflow-hidden rounded-3xl border border-border bg-card shadow-2xl shadow-foreground/10">
-              <div className="flex flex-col justify-between gap-3 border-b border-border px-6 py-5 sm:flex-row sm:items-center"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Side by side</p><h2 className="mt-1 text-xl font-bold text-foreground">Quick comparison</h2></div><span className="flex items-center gap-2 text-sm text-muted-foreground"><Wallet className="size-4 text-primary" />Tuned to your budget</span></div>
-              <div className="overflow-x-auto"><table className="w-full min-w-[48rem] text-left text-base"><thead className="bg-muted text-xs uppercase tracking-[0.14em] text-muted-foreground"><tr><th scope="col" className="bg-primary px-6 py-4 font-bold text-primary-foreground">Feature</th>{searchProducts.map((product) => <th scope="col" className="px-6 py-4 font-bold" key={product.name}>{product.name}</th>)}</tr></thead><tbody className="divide-y divide-border text-muted-foreground"><tr><th scope="row" className="bg-accent px-6 py-5 font-semibold text-accent-foreground">Price</th>{searchProducts.map((product) => <td className="px-6 py-5 font-semibold text-primary" key={`${product.name}-price`}>${product.price.toLocaleString()}</td>)}</tr><tr><th scope="row" className="bg-accent px-6 py-5 font-semibold text-accent-foreground">Battery life</th>{searchProducts.map((product) => <td className="px-6 py-5" key={`${product.name}-battery`}>{product.batteryLife}</td>)}</tr><tr><th scope="row" className="bg-accent px-6 py-5 font-semibold text-accent-foreground">Match reasons</th>{searchProducts.map((product) => <td className="px-6 py-5" key={`${product.name}-reasons`}>{product.matchReasons.join(", ")}</td>)}</tr></tbody></table></div>
+            <section className="mt-12 overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
+              <div className="flex flex-col justify-between gap-4 border-b border-border bg-muted/20 px-6 py-5 sm:flex-row sm:items-center">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-lg bg-background border border-border shadow-sm">
+                    <LayoutList className="size-5 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-foreground">Feature Comparison</h2>
+                    <p className="text-sm text-muted-foreground">Side-by-side breakdown</p>
+                  </div>
+                </div>
+                <span className="flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary">
+                  <Wallet className="size-4" />
+                  Tuned to your budget
+                </span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[48rem] text-left text-sm">
+                  <thead className="bg-muted/40">
+                    <tr>
+                      <th scope="col" className="w-48 px-6 py-4 font-semibold text-muted-foreground">
+                        Feature
+                      </th>
+                      {searchProducts.map((product) => (
+                        <th scope="col" className="px-6 py-4 font-semibold text-foreground" key={product.name}>
+                          {product.name}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/50 bg-card">
+                    <tr className="hover:bg-muted/20 transition-colors">
+                      <th scope="row" className="px-6 py-4 font-medium text-muted-foreground">
+                        Price
+                      </th>
+                      {searchProducts.map((product) => (
+                        <td className="px-6 py-4 font-semibold text-foreground" key={`${product.name}-price`}>
+                          ${product.price.toLocaleString()}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr className="hover:bg-muted/20 transition-colors">
+                      <th scope="row" className="px-6 py-4 font-medium text-muted-foreground">
+                        Battery Life
+                      </th>
+                      {searchProducts.map((product) => (
+                        <td className="px-6 py-4 text-foreground" key={`${product.name}-battery`}>
+                          {product.batteryLife}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr className="hover:bg-muted/20 transition-colors">
+                      <th scope="row" className="px-6 py-4 font-medium text-muted-foreground align-top">
+                        Key Strengths
+                      </th>
+                      {searchProducts.map((product) => (
+                        <td className="px-6 py-4 text-muted-foreground" key={`${product.name}-reasons`}>
+                          <ul className="flex flex-wrap gap-1.5">
+                            {product.matchReasons.map((reason, i) => (
+                              <li key={i} className="rounded-md bg-secondary px-2 py-1 text-xs text-secondary-foreground">
+                                {reason}
+                              </li>
+                            ))}
+                          </ul>
+                        </td>
+                      ))}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
           )}
+
         </div>
       </section>
     </main>

@@ -209,12 +209,12 @@ export default function ChatPanel({
   }
 
   return (
-    <section className="flex h-[calc(100dvh-73px)] min-h-0 flex-1 flex-col overflow-hidden border-b border-border bg-card md:fixed md:bottom-0 md:left-0 md:top-[73px] md:z-30 md:h-auto md:flex-none md:w-[32%] md:border-b-0 md:border-r lg:w-[28%] xl:w-[25%]">
+    <section className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden bg-card">
       <div className="border-b border-border px-6 py-6 lg:px-8">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
           AI brief builder
         </p>
-        <h2 className="mt-2 text-2xl font-bold tracking-tight text-foreground">
+        <h2 className="mt-2 text-2xl font-semibold text-foreground">
           Chat &amp; refinement
         </h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">Tell us what matters. We&apos;ll narrow the field.</p>
@@ -222,7 +222,7 @@ export default function ChatPanel({
 
       <div
         ref={messagesContainerRef}
-        className="relative min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain touch-pan-y px-6 py-7"
+        className="relative min-h-0 flex-1 space-y-4 overflow-y-auto touch-pan-y px-6 py-7"
       >
         {messages.map((message) => (
           <article
@@ -287,7 +287,7 @@ export default function ChatPanel({
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="sticky bottom-0 z-20 shrink-0 border-t border-border bg-background/95 p-5 backdrop-blur-xl lg:p-6">
+      <form onSubmit={handleSubmit} className="sticky bottom-0 z-20 shrink-0 border-t border-r border-border bg-background/95 p-5 backdrop-blur-xl lg:p-6">
         <label htmlFor="chat-message" className="sr-only">
           Refine your request
         </label>
