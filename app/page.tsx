@@ -60,7 +60,7 @@ function ProductImage({
 }
 
 export default function Home() {
-  const { messages, sendMessage, status, stop, regenerate } = useChat<ChatUIMessage>({
+  const { error, messages, sendMessage, status, stop, regenerate } = useChat<ChatUIMessage>({
     transport: new DefaultChatTransport({ api: "/api/chat" }),
   });
 
@@ -72,6 +72,7 @@ export default function Home() {
       {/* Sidebar: Chat Panel */}
       <aside className="flex h-[50dvh] w-full flex-col border-b border-border bg-card/50 md:h-full md:w-[350px] md:flex-shrink-0 md:border-b-0 md:border-r z-10 shadow-sm">
         <ChatPanel
+          error={error}
           messages={messages}
           sendMessage={sendMessage}
           status={status}

@@ -71,6 +71,52 @@ const mockProducts = [
 ] as const;
 
 type SearchProductsInput = z.infer<typeof inputSchema>;
+const RATE_LIMITED_MESSAGE = "Search is temporarily rate-limited, please try again in a moment";
+
+function hasStatus429(value: unknown) {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const record = value as Record<string, unknown>;
+  return [record.status, record.statusCode, record.httpStatus, record.http_status, record.code].some(
+    (status) => status === 429 || status === "429",
+  );
+}
+
+function isRateLimited(value: unknown) {
+  if (hasStatus429(value)) {
+    return true;
+  }
+
+  if (typeof value !== "object" || value === null) {
+    return typeof value === "string" && /\b429\b/.test(value);
+  }
+
+  const record = value as Record<string, unknown>;
+  const error = record.error;
+
+  if (hasStatus429(error)) {
+    return true;
+  }
+
+  if (typeof error === "string" && /\b429\b/.test(error)) {
+    return true;
+  }
+
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    typeof (error as Record<string, unknown>).message === "string" &&
+    /\b429\b/.test((error as Record<string, string>).message)
+  ) {
+    return true;
+  }
+
+  return (
+    typeof record.message === "string" && /\b429\b/.test(record.message)
+  );
+}
 
 console.log(mockProducts);
 
@@ -107,6 +153,7 @@ function mockExecute(input: SearchProductsInput) {
 }
 
 async function execute(input: SearchProductsInput) {
+  throw new Error("429");
   if (MOCK_MODE) {
     return mockExecute(input);
   }
@@ -131,6 +178,10 @@ async function execute(input: SearchProductsInput) {
       google_domain: "google.co.in",
       q: query,
     });
+
+    if (isRateLimited(response)) {
+      throw new Error(RATE_LIMITED_MESSAGE);
+    }
 
    console.log("Search query:", query);
    console.log("Shopping results:", response.shopping_results?.slice(0, 1));
@@ -189,6 +240,10 @@ async function execute(input: SearchProductsInput) {
       }),
     };
   } catch (error) {
+    if (isRateLimited(error)) {
+      throw new Error(RATE_LIMITED_MESSAGE);
+    }
+
     const message = error instanceof Error ? error.message : "An unknown error occurred.";
     throw new Error(`Product search failed: ${message}`);
   }

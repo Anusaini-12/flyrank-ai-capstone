@@ -17,12 +17,18 @@ export type ChatUIMessage = UIMessage<
 >;
 export type ChatPanelProps = Pick<
   UseChatHelpers<ChatUIMessage>,
-  "messages" | "sendMessage" | "status" | "stop" | "regenerate"
+  "error" | "messages" | "sendMessage" | "status" | "stop" | "regenerate"
 >;
 type SearchProductsPart = Extract<
   ChatUIMessage["parts"][number],
   { type: "tool-searchProducts" }
 >;
+
+const examplePrompts = [
+  "Laptop under ₹50,000 for coding",
+  "Wireless headphones with noise cancellation",
+  "Compact phone with a great camera",
+] as const;
 
 function splitMarkdownBlocks(text: string, isStreaming: boolean) {
   const completedBlocks: string[] = [];
@@ -97,8 +103,19 @@ function SearchProductsPartView({
 
   if (part.state === "input-available") {
     return (
-      <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
-        Searching for {part.input.category}...
+      <div
+        role="status"
+        aria-label="Loading product matches"
+        className="animate-pulse rounded-xl border border-border bg-card p-4"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 space-y-2">
+            <div className="h-2.5 w-14 rounded-full bg-muted-foreground/20" />
+            <div className="h-4 w-36 rounded-full bg-muted-foreground/20" />
+          </div>
+          <div className="h-5 w-16 shrink-0 rounded-full bg-primary/15" />
+        </div>
+        <div className="mt-3 h-8 rounded-lg bg-muted" />
       </div>
     );
   }
@@ -137,6 +154,7 @@ function SearchProductsPartView({
 }
 
 export default function ChatPanel({
+  error,
   messages,
   sendMessage,
   status,
@@ -144,6 +162,7 @@ export default function ChatPanel({
   regenerate,
 }: ChatPanelProps) {
   const [draft, setDraft] = useState("");
+  const [isRetrying, setIsRetrying] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const isAtBottomRef = useRef(true);
@@ -208,6 +227,20 @@ export default function ChatPanel({
     await sendMessage({ text: message });
   }
 
+  async function handleRetry() {
+    if (isRetrying) {
+      return;
+    }
+
+    setIsRetrying(true);
+
+    try {
+      await regenerate();
+    } finally {
+      setIsRetrying(false);
+    }
+  }
+
   return (
     <section className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden bg-card">
       <div className="border-b border-border px-6 py-6 lg:px-8">
@@ -224,6 +257,28 @@ export default function ChatPanel({
         ref={messagesContainerRef}
         className="relative min-h-0 flex-1 space-y-4 overflow-y-auto touch-pan-y px-6 py-7"
       >
+        {messages.length === 0 && (
+          <div className="flex min-h-full flex-col justify-center">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">
+              Start with an example
+            </p>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              Choose a prompt to begin your product search.
+            </p>
+            <div className="mt-5 space-y-3">
+              {examplePrompts.map((prompt) => (
+                <button
+                  key={prompt}
+                  type="button"
+                  onClick={() => void sendMessage({ text: prompt })}
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-left text-sm font-medium text-foreground transition-colors hover:border-primary/50 hover:bg-primary/5 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         {messages.map((message) => (
           <article
             key={message.id}
@@ -273,7 +328,14 @@ export default function ChatPanel({
             <p className="mb-2 text-xs font-bold uppercase tracking-[0.14em] opacity-60">
               FlyRank AI
             </p>
-            <p className="text-[15px] leading-7 text-muted-foreground">Thinking...</p>
+            <div
+              role="status"
+              aria-label="Assistant is thinking"
+              className="animate-pulse space-y-2"
+            >
+              <div className="h-4 w-4/5 rounded-full bg-muted-foreground/20" />
+              <div className="h-4 w-3/5 rounded-full bg-muted-foreground/20" />
+            </div>
           </article>
         )}
         {!isAtBottom && (
@@ -288,6 +350,22 @@ export default function ChatPanel({
       </div>
 
       <form onSubmit={handleSubmit} className="sticky bottom-0 z-20 shrink-0 border-t border-r border-border bg-background/95 p-5 backdrop-blur-xl lg:p-6">
+        {error && (
+          <div className="mb-4 flex items-center justify-between gap-4 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm">
+            <p className="font-medium text-foreground" role="status">
+              The last message failed. Please try again.
+            </p>
+            <button
+              type="button"
+              onClick={() => void handleRetry()}
+              disabled={isRetrying}
+              className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <RotateCcw className={`size-3.5 ${isRetrying ? "animate-spin" : ""}`} />
+              {isRetrying ? "Retrying..." : "Retry"}
+            </button>
+          </div>
+        )}
         <label htmlFor="chat-message" className="sr-only">
           Refine your request
         </label>
