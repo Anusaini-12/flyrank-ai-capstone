@@ -153,7 +153,6 @@ function mockExecute(input: SearchProductsInput) {
 }
 
 async function execute(input: SearchProductsInput) {
-  throw new Error("429");
   if (MOCK_MODE) {
     return mockExecute(input);
   }
