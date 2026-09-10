@@ -12,6 +12,16 @@ const config: Config = {
           900: "#04342C",
         },
       },
+      keyframes: {
+        "send-button-shake": {
+          "0%, 100%": { transform: "translateX(0)" },
+          "25%": { transform: "translateX(-4px)" },
+          "75%": { transform: "translateX(4px)" },
+        },
+      },
+      animation: {
+        "send-button-shake": "send-button-shake 400ms ease-in-out",
+      },
     },
   },
 };
