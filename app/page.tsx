@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import ChatPanel, { type ChatUIMessage } from "@/components/chat/ChatPanel";
+import BudgetFilter from "@/components/filters/BudgetFilter";
 
 function getLatestSearchProducts(messages: ChatUIMessage[]) {
   for (let messageIndex = messages.length - 1; messageIndex >= 0; messageIndex -= 1) {
@@ -66,6 +67,17 @@ export default function Home() {
 
   const searchProducts = getLatestSearchProducts(messages);
 
+  function handleBudgetFilterSubmit({
+    category,
+    maxPrice,
+  }: Parameters<React.ComponentProps<typeof BudgetFilter>["onSubmit"]>[0]) {
+    const budgetMessage = maxPrice === undefined
+      ? `I need ${category}`
+      : `I need ${category} under $${maxPrice}`;
+
+    void sendMessage({ text: budgetMessage });
+  }
+
   return (
     <main className="flex min-h-[calc(100dvh-73px)] w-full flex-col bg-background text-foreground md:h-[calc(100dvh-73px)] md:flex-row md:overflow-hidden">
 
@@ -92,6 +104,7 @@ export default function Home() {
                 <Sparkles className="size-3.5" />
                 Product Shortlist
               </div>
+              <BudgetFilter onSubmit={handleBudgetFilterSubmit} />
               <h1 className="text-3xl font-semibold text-foreground sm:text-4xl lg:text-5xl">
                 Decision Board
               </h1>
@@ -187,7 +200,7 @@ export default function Home() {
                 </div>
                 <h3 className="text-lg font-semibold text-foreground">Awaiting your criteria</h3>
                 <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-                  Start a conversation in the panel to describe what you're looking for. Your personalized matches will appear here.
+                  Start a conversation in the panel to describe what you&apos;re looking for. Your personalized matches will appear here.
                 </p>
               </div>
             )}

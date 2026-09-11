@@ -32,6 +32,14 @@ export default function ToolProductCard({ product }: ToolProductCardProps) {
         </p>
       </div>
 
+      {product.matchReasons.length > 0 ? (
+        <ul className="mt-3 list-disc pl-6 text-primary space-y-1 text-xs text-muted-foreground">
+          {product.matchReasons.map((reason) => (
+            <li key={reason}>{reason}</li>
+          ))}
+        </ul>
+      ) : null}
+
       <a
         href={product.link}
         target="_blank"
