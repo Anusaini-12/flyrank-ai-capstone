@@ -42,7 +42,7 @@ function splitMarkdownBlocks(text: string, isStreaming: boolean) {
 
     currentLines.push(line);
 
-    
+
     if (line.trim() === "" && !insideCodeFence) {
       const block = currentLines.join("\n").trim();
 
@@ -180,8 +180,8 @@ export default function ChatPanel({
     function handleScroll() {
       const atBottom =
         scrollContainer.scrollHeight -
-          scrollContainer.scrollTop -
-          scrollContainer.clientHeight <=
+        scrollContainer.scrollTop -
+        scrollContainer.clientHeight <=
         8;
 
       isAtBottomRef.current = atBottom;
@@ -379,6 +379,7 @@ export default function ChatPanel({
           />
           <button
             type="submit"
+            aria-label="Send message"
             className="flex items-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/85 disabled:cursor-not-allowed disabled:opacity-50"
             disabled={!draft.trim()}
           >

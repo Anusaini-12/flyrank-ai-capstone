@@ -24,7 +24,10 @@ export default function PrimaryNav() {
         aria-label="Primary navigation"
         className="mx-auto flex w-full max-w-[1440px] items-center gap-2 px-3 py-3 sm:gap-3 sm:px-5 sm:py-4 lg:px-8"
       >
-        <Link href="/" className="mr-1 flex shrink-0 items-center gap-3 text-foreground sm:mr-5">
+        <Link
+          href="/"
+          aria-label="FlyRank AI home"
+          className="mr-1 flex shrink-0 items-center gap-3 text-foreground sm:mr-5">
           <span className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
             <Sparkles className="size-5" />
           </span>
@@ -38,11 +41,10 @@ export default function PrimaryNav() {
               <Link
                 key={href}
                 href={href}
-                className={`flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-sm font-semibold transition-colors sm:flex-none sm:gap-2 sm:px-4 ${
-                  isActive
+                className={`flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-sm font-semibold transition-colors sm:flex-none sm:gap-2 sm:px-4 ${isActive
                     ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                }`}
+                    : "text-foreground hover:bg-accent hover:text-accent-foreground"
+                  }`}
               >
                 <Icon className="size-4" />
                 {label}
