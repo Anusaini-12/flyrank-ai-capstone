@@ -32,9 +32,11 @@ npm install
 
 Create `.env.local` with:
 
+```text
 OPENROUTER_API_KEY=your-key-here
 SERPAPI_API_KEY=your-key-here
 MOCK_MODE=false
+```
 
 Set `MOCK_MODE=true` to use built-in mock product data during UI development without spending SerpApi quota.
 
@@ -53,7 +55,58 @@ npx playwright test   # end-to-end test
 
 ## Project Structure
 
-flyrank-ai-capstone/ │ ├── app/ │ ├── (shop)/ │ │ ├── ... # Main shopping/product routes │ │ └── ... │ │ │ ├── api/ │ │ └── chat/ │ │ └── route.ts # Streaming AI chat + tool calling │ │ │ ├── playground/ │ │ ├── ... # Standalone UI experiments │ │ ├── 3d-viewer/ # Interactive 3D product viewer │ │ └── motion-button/ # Motion button state-machine demo │ │ │ ├── error.tsx # Root error boundary │ └── ... │ ├── components/ │ ├── chat/ │ │ ├── ChatPanel.tsx │ │ ├── ToolProductCard.tsx │ │ └── ... │ │ │ ├── filters/ │ │ └── BudgetFilter.tsx │ │ │ └── ui/ │ └── ... # Reusable UI components │ ├── lib/ │ ├── ai-config.ts # AI model + system prompt configuration │ └── tools/ │ └── searchProducts.ts # Product search tool │ ├── e2e/ │ └── ... # Playwright tests │ ├── public/ │ └── models/ │ └── headphones.glb # 3D model asset │ ├── .github/ │ └── workflows/ │ └── ... # GitHub Actions CI │ ├── .env.local # Local secrets — not committed ├── package.json └── README.md
+```text
+flyrank-ai-capstone/
+│
+├── app/
+│   ├── (shop)/
+│   │   ├── ...                 # Main shopping/product routes
+│   │   └── ...
+│   │
+│   ├── api/
+│   │   └── chat/
+│   │       └── route.ts        # Streaming AI chat + tool calling
+│   │
+│   ├── playground/
+│   │   ├── ...                 # Standalone UI experiments
+│   │   ├── 3d-viewer/          # Interactive 3D product viewer
+│   │   └── motion-button/      # Motion button state-machine demo
+│   │
+│   ├── error.tsx               # Root error boundary
+│   └── ...
+│
+├── components/
+│   ├── chat/
+│   │   ├── ChatPanel.tsx
+│   │   ├── ToolProductCard.tsx
+│   │   └── ...
+│   │
+│   ├── filters/
+│   │   └── BudgetFilter.tsx
+│   │
+│   └── ui/
+│       └── ...                 # Reusable UI components
+│
+├── lib/
+│   ├── ai-config.ts            # AI model + system prompt configuration
+│   └── tools/
+│       └── searchProducts.ts   # Product search tool
+│
+├── e2e/
+│   └── ...                     # Playwright tests
+│
+├── public/
+│   └── models/
+│       └── headphones.glb      # 3D model asset
+│
+├── .github/
+│   └── workflows/
+│       └── ...                 # GitHub Actions CI
+│
+├── .env.local                  # Local secrets — not committed
+├── package.json
+└── README.md
+```
 
 
 ## `searchProducts` Tool
