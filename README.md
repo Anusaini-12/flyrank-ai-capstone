@@ -101,7 +101,7 @@ Budget filtering happens in code against the real `extracted_price` returned by 
 
 An interactive headphones product viewer built with React Three Fiber, with a live configurator (color, metalness, roughness, wireframe, auto-rotate) via leva.
 
-**Perf note:** [bundle size transferred] and [observed frame rate while orbiting] — measured via Chrome DevTools Network/Performance tabs. The canvas is lazy-loaded via `next/dynamic` (`ssr: false`) so the Three.js bundle is never loaded outside this route, and a single low-poly model was used to avoid needing DRACO/meshopt compression. A static fallback image renders instead of the canvas when `prefers-reduced-motion` is enabled.
+**Perf note:** 1,557 kB / 2,202 kB transferred and ~60 FPS — measured via Chrome DevTools Network/Performance tabs. The canvas is lazy-loaded via `next/dynamic` (`ssr: false`) so the Three.js bundle is never loaded outside this route, and a single low-poly model was used to avoid needing DRACO/meshopt compression. A static fallback image renders instead of the canvas when `prefers-reduced-motion` is enabled.
 
 **With more time:** drag-and-drop custom GLB upload, multiple product models, and compression tooling for larger assets.
 
