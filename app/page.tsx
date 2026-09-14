@@ -198,7 +198,7 @@ export default function Home() {
                 <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-muted">
                   <PackageSearch className="size-8 text-muted-foreground" />
                 </div>
-                <h3 className="text-lg font-semibold text-foreground">Awaiting your criteria</h3>
+                <h2 className="text-lg font-semibold text-foreground">Awaiting your criteria</h2>
                 <p className="mt-2 max-w-sm text-sm text-muted-foreground">
                   Start a conversation in the panel to describe what you&apos;re looking for. Your personalized matches will appear here.
                 </p>
