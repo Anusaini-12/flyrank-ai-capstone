@@ -53,18 +53,7 @@ npx playwright test   # end-to-end test
 
 ## Project Structure
 
-app/
-(shop)/ # main product routes (health, saved)
-api/chat/ # streaming chat route handler with tool calling
-playground/ # accessibility components, 3D viewer, motion button demos
-components/
-chat/ # ChatPanel, ToolProductCard, message rendering
-filters/ # BudgetFilter (validated quick-search form)
-ui/ # shadcn/ui components
-lib/
-ai-config.ts # model + system prompt config
-tools/ # searchProducts tool definition
-e2e/ # Playwright tests
+flyrank-ai-capstone/ │ ├── app/ │ ├── (shop)/ │ │ ├── ... # Main shopping/product routes │ │ └── ... │ │ │ ├── api/ │ │ └── chat/ │ │ └── route.ts # Streaming AI chat + tool calling │ │ │ ├── playground/ │ │ ├── ... # Standalone UI experiments │ │ ├── 3d-viewer/ # Interactive 3D product viewer │ │ └── motion-button/ # Motion button state-machine demo │ │ │ ├── error.tsx # Root error boundary │ └── ... │ ├── components/ │ ├── chat/ │ │ ├── ChatPanel.tsx │ │ ├── ToolProductCard.tsx │ │ └── ... │ │ │ ├── filters/ │ │ └── BudgetFilter.tsx │ │ │ └── ui/ │ └── ... # Reusable UI components │ ├── lib/ │ ├── ai-config.ts # AI model + system prompt configuration │ └── tools/ │ └── searchProducts.ts # Product search tool │ ├── e2e/ │ └── ... # Playwright tests │ ├── public/ │ └── models/ │ └── headphones.glb # 3D model asset │ ├── .github/ │ └── workflows/ │ └── ... # GitHub Actions CI │ ├── .env.local # Local secrets — not committed ├── package.json └── README.md
 
 
 ## `searchProducts` Tool
