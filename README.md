@@ -1,26 +1,77 @@
 # FlyRank AI Front-end AI Engineering Capstone
 
-This repository is being developed as part of the FlyRank AI Front-end AI Engineering track.
+An AI shopping agent built as part of the FlyRank AI Front-end AI Engineering track. Users describe what they're shopping for in natural language, and the assistant searches real product listings, compares them, and explains its recommendations — powered by an LLM with tool-calling, not a static search form.
 
-## Overview
+**Live app:** https://flyrank-ai-capstone-anu.vercel.app/
 
-This project will explore the integration of AI capabilities into a modern web application, with a focus on useful user experiences, clean frontend architecture, and practical AI-assisted development.
+## Features
 
-## Planned Stack
+- **Streaming AI chat** — real-time token-by-token responses via the AI SDK and OpenRouter (Claude), with a working stop button and multi-turn memory
+- **Real product search** — a `searchProducts` tool backed by SerpApi's Google Shopping engine (India-targeted), returning real prices, links, and images — never invented data
+- **Decision board** — product cards and a side-by-side comparison table, both driven live by the assistant's actual search results
+- **Accessible components built from scratch** — a hand-built Modal, Tabs, and Disclosure implementing the W3C ARIA Authoring Practices, compared against shadcn/ui in `app/playground/NOTES.md`
+- **Resilient error handling** — a root `error.tsx` boundary, a chat-level retry banner for failed messages, layout-matched loading skeletons, and designed empty states with clickable example prompts
+- **Motion Button demo** — a fully choreographed Send button (idle → loading → success/error → idle) with reduced-motion support
+- **3D product viewer** — an interactive React Three Fiber scene with a live material/color configurator
+- **Tested and CI-enforced** — Vitest + React Testing Library component tests, one Playwright end-to-end test (with the AI route mocked, never hitting the real API), and a GitHub Actions workflow that blocks merges on failure
 
-- Next.js
-- React
-- TypeScript
-- Tailwind CSS
-- AI/LLM APIs
+## Tech Stack
+
+- Next.js, React, TypeScript, Tailwind CSS
+- AI SDK + OpenRouter (Claude) for streaming chat and tool calling
+- SerpApi (Google Shopping) for real product data
+- shadcn/ui, React Three Fiber + drei + leva
+- Vitest, React Testing Library, Playwright
+- Vercel for deployment
+
+## Getting Started
+
+```bash
+npm install
+```
+
+Create `.env.local` with:
+
+OPENROUTER_API_KEY=your-key-here
+SERPAPI_API_KEY=your-key-here
+MOCK_MODE=false
+
+Set `MOCK_MODE=true` to use built-in mock product data during UI development without spending SerpApi quota.
+
+```bash
+npm run dev
+```
+
+Visit `http://localhost:3000`.
+
+### Running tests
+
+```bash
+npm run test          # Vitest component tests
+npx playwright test   # end-to-end test
+```
+
+## Project Structure
+
+app/
+(shop)/ # main product routes (health, saved)
+api/chat/ # streaming chat route handler with tool calling
+playground/ # accessibility components, 3D viewer, motion button demos
+components/
+chat/ # ChatPanel, ToolProductCard, message rendering
+filters/ # BudgetFilter (validated quick-search form)
+ui/ # shadcn/ui components
+lib/
+ai-config.ts # model + system prompt config
+tools/ # searchProducts tool definition
+e2e/ # Playwright tests
+
 
 ## `searchProducts` Tool
 
-The `searchProducts` tool searches the mock product catalog by category, budget, and shopper priorities.
+The `searchProducts` tool searches real product listings via SerpApi's Google Shopping engine (or a small mock dataset when `MOCK_MODE=true`), filtered by category, budget, and shopper priorities.
 
 ### Input Schema
-
-The tool accepts a Zod object with these fields:
 
 | Field | Type | Description |
 | --- | --- | --- |
@@ -30,44 +81,37 @@ The tool accepts a Zod object with these fields:
 
 ### Return Shape
 
-The tool returns an object containing a `products` list with up to three matching products:
-
 ```ts
 {
-	products: Array<{
-		id: string;
-		name: string;
-		price: number;
-		batteryLife: string;
-		matchReasons: string[];
-	}>;
+  products: Array<{
+    id: string;
+    name: string;
+    price: number;
+    image: string;
+    batteryLife: string;
+    matchReasons: string[];
+    link: string; // real product URL, never invented
+  }>;
 }
 ```
 
-Products also include their catalog `category` internally, while the fields above are the product data used by the UI.
+Budget filtering happens in code against the real `extracted_price` returned by SerpApi, not just via the search query text. Rate-limit (429) responses are surfaced as a distinct error, separate from generic failures.
 
-## Development
+## 3D Model Viewer
 
-The project is currently in the initial setup phase. The technology choices and project scope may evolve as the capstone develops.
+An interactive headphones product viewer built with React Three Fiber, with a live configurator (color, metalness, roughness, wireframe, auto-rotate) via leva.
 
-## Goals
+**Perf note:** [bundle size transferred] and [observed frame rate while orbiting] — measured via Chrome DevTools Network/Performance tabs. The canvas is lazy-loaded via `next/dynamic` (`ssr: false`) so the Three.js bundle is never loaded outside this route, and a single low-poly model was used to avoid needing DRACO/meshopt compression. A static fallback image renders instead of the canvas when `prefers-reduced-motion` is enabled.
 
-- Build a practical AI-powered web application
-- Apply AI-assisted development workflows
-- Follow maintainable frontend development practices
-- Document the development process and decisions
+**With more time:** drag-and-drop custom GLB upload, multiple product models, and compression tooling for larger assets.
+
+### 3D Model Credit
+
+Headphones 3D model by Ginsta, downloaded from Poly Pizza. Licensed under CC-BY.
 
 ## Status
 
-The repository is in the initial setup phase and does not contain a runnable application yet.
-
-## Getting Started
-
-The application scaffold has not been initialized yet. Setup and run instructions will be added once the Next.js project is in place.
-
-## Project Structure
-
-The project will be organized around reusable frontend components, application features, AI integrations, and supporting utilities as development progresses.
+Core AI shopping flow, real product search, error handling, accessibility components, automated testing/CI, and supplementary interaction assignments (motion button, 3D viewer) are complete and deployed. See individual assignment notes in `app/playground/` for details on specific builds.
 
 ## License
 
