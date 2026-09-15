@@ -6,7 +6,11 @@ import PrimaryNav from "./PrimaryNav";
 export default function ConditionalNav() {
   const pathname = usePathname();
 
-  if (pathname === "/demo" || pathname === "/3d-viewer") {
+  if (
+    pathname === "/demo" ||
+    pathname === "/3d-viewer" ||
+    pathname === "/shader-hero"
+  ) {
     return null;
   }
 
