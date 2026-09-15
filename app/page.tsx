@@ -82,7 +82,7 @@ export default function Home() {
     <main className="flex min-h-[calc(100dvh-73px)] w-full flex-col bg-background text-foreground md:h-[calc(100dvh-73px)] md:flex-row md:overflow-hidden">
 
       {/* Sidebar: Chat Panel */}
-      <aside className="flex h-[65dvh] w-full flex-col border-b border-border bg-card/50 md:h-full md:w-[350px] md:flex-shrink-0 md:border-b-0 md:border-r z-10 shadow-sm">
+      <aside className="flex h-[90dvh] w-full flex-col border-b border-border bg-card/50 md:h-full md:w-[350px] md:flex-shrink-0 md:border-b-0 md:border-r z-10 shadow-sm">
         <ChatPanel
           error={error}
           messages={messages}
