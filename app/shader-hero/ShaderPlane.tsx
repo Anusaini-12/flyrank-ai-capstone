@@ -4,6 +4,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
+// Vertex shader controls the position of the fullscreen plane.
 const vertexShader = String.raw`
   varying vec2 vUv;
 
@@ -13,6 +14,8 @@ const vertexShader = String.raw`
   }
 `;
 
+// Fragment shader creates the animated fullscreen gradient,
+// mouse interaction, color movement, and subtle grain effect.
 const fragmentShader = String.raw`
   precision mediump float;
 
@@ -77,145 +80,157 @@ const fragmentShader = String.raw`
   }
 `;
 
+
+// Connects the shader to Three.js and updates time, mouse,
+// resolution, and tab visibility for the interactive experience.
 function ShaderPlaneInner() {
-  const materialRef = useRef<THREE.ShaderMaterial | null>(null);
-  const mouseRef = useRef(new THREE.Vector2(0, 0));
-  const elapsedRef = useRef(0);
-  const pausedRef = useRef(document.hidden);
+    const materialRef = useRef<THREE.ShaderMaterial | null>(null);
+    const mouseRef = useRef(new THREE.Vector2(0, 0));
+    const elapsedRef = useRef(0);
+    const pausedRef = useRef(document.hidden);
 
-  const { size, gl } = useThree();
+    const { size, gl } = useThree();
 
-  useEffect(() => {
-    const handlePointerMove = (event: PointerEvent) => {
-      const rect = gl.domElement.getBoundingClientRect();
 
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
+    // Tracks mouse movement for shader interaction and pauses animation
+    // when the browser tab becomes hidden.
+    useEffect(() => {
+        const handlePointerMove = (event: PointerEvent) => {
+            const rect = gl.domElement.getBoundingClientRect();
 
-      mouseRef.current.set(x, size.height - y);
-    };
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
 
-    const handleVisibilityChange = () => {
-      const hidden = document.hidden;
+            mouseRef.current.set(x, size.height - y);
+        };
 
-      pausedRef.current = hidden;
+        const handleVisibilityChange = () => {
+            const hidden = document.hidden;
 
-      if (hidden && materialRef.current) {
-        elapsedRef.current =
-          materialRef.current.uniforms.u_time.value;
-      }
-    };
+            pausedRef.current = hidden;
 
-    const canvas = gl.domElement;
+            if (hidden && materialRef.current) {
+                elapsedRef.current =
+                    materialRef.current.uniforms.u_time.value;
+            }
+        };
 
-    canvas.addEventListener(
-      "pointermove",
-      handlePointerMove
+        const canvas = gl.domElement;
+
+        canvas.addEventListener(
+            "pointermove",
+            handlePointerMove
+        );
+
+        document.addEventListener(
+            "visibilitychange",
+            handleVisibilityChange
+        );
+
+        return () => {
+            canvas.removeEventListener(
+                "pointermove",
+                handlePointerMove
+            );
+
+            document.removeEventListener(
+                "visibilitychange",
+                handleVisibilityChange
+            );
+        };
+    }, [gl, size.height]);
+
+    // Updates the shader resolution whenever the canvas size changes.
+    useEffect(() => {
+        if (!materialRef.current) return;
+
+        materialRef.current.uniforms.u_resolution.value.set(
+            size.width,
+            size.height
+        );
+    }, [size]);
+
+    // Updates the shader animation every frame and sends the current
+    // time, resolution, and mouse position to the GPU.
+    useFrame(({ clock }) => {
+        if (!materialRef.current) return;
+
+        const material = materialRef.current;
+
+        if (pausedRef.current || document.hidden) {
+            material.uniforms.u_time.value = elapsedRef.current;
+
+            material.uniforms.u_resolution.value.set(
+                size.width,
+                size.height
+            );
+
+            material.uniforms.u_mouse.value.copy(
+                mouseRef.current
+            );
+
+            return;
+        }
+
+        elapsedRef.current = clock.getElapsedTime();
+
+        material.uniforms.u_time.value =
+            elapsedRef.current;
+
+        material.uniforms.u_resolution.value.set(
+            size.width,
+            size.height
+        );
+
+        material.uniforms.u_mouse.value.copy(
+            mouseRef.current
+        );
+    });
+
+    // Renders a fullscreen plane and applies the custom shader material to it.
+    return (
+        <mesh>
+            <planeGeometry args={[2, 2]} />
+
+            <shaderMaterial
+                ref={materialRef}
+                vertexShader={vertexShader}
+                fragmentShader={fragmentShader}
+                uniforms={{
+                    u_time: {
+                        value: 0,
+                    },
+                    u_resolution: {
+                        value: new THREE.Vector2(
+                            size.width,
+                            size.height
+                        ),
+                    },
+                    u_mouse: {
+                        value: new THREE.Vector2(0, 0),
+                    },
+                }}
+            />
+        </mesh>
     );
-
-    document.addEventListener(
-      "visibilitychange",
-      handleVisibilityChange
-    );
-
-    return () => {
-      canvas.removeEventListener(
-        "pointermove",
-        handlePointerMove
-      );
-
-      document.removeEventListener(
-        "visibilitychange",
-        handleVisibilityChange
-      );
-    };
-  }, [gl, size.height]);
-
-  useEffect(() => {
-    if (!materialRef.current) return;
-
-    materialRef.current.uniforms.u_resolution.value.set(
-      size.width,
-      size.height
-    );
-  }, [size]);
-
-  useFrame(({ clock }) => {
-    if (!materialRef.current) return;
-
-    const material = materialRef.current;
-
-    if (pausedRef.current || document.hidden) {
-      material.uniforms.u_time.value = elapsedRef.current;
-
-      material.uniforms.u_resolution.value.set(
-        size.width,
-        size.height
-      );
-
-      material.uniforms.u_mouse.value.copy(
-        mouseRef.current
-      );
-
-      return;
-    }
-
-    elapsedRef.current = clock.getElapsedTime();
-
-    material.uniforms.u_time.value =
-      elapsedRef.current;
-
-    material.uniforms.u_resolution.value.set(
-      size.width,
-      size.height
-    );
-
-    material.uniforms.u_mouse.value.copy(
-      mouseRef.current
-    );
-  });
-
-  return (
-    <mesh>
-      <planeGeometry args={[2, 2]} />
-
-      <shaderMaterial
-        ref={materialRef}
-        vertexShader={vertexShader}
-        fragmentShader={fragmentShader}
-        uniforms={{
-          u_time: {
-            value: 0,
-          },
-          u_resolution: {
-            value: new THREE.Vector2(
-              size.width,
-              size.height
-            ),
-          },
-          u_mouse: {
-            value: new THREE.Vector2(0, 0),
-          },
-        }}
-      />
-    </mesh>
-  );
 }
 
+// Creates the WebGL canvas, sets an orthographic camera,
+// and limits the device pixel ratio for better performance.
 export default function ShaderPlane() {
-  return (
-    <Canvas
-      orthographic
-      camera={{
-        position: [0, 0, 1],
-        zoom: 1,
-      }}
-      dpr={[1, 2]}
-      gl={{
-        antialias: true,
-      }}
-    >
-      <ShaderPlaneInner />
-    </Canvas>
-  );
+    return (
+        <Canvas
+            orthographic
+            camera={{
+                position: [0, 0, 1],
+                zoom: 1,
+            }}
+            dpr={[1, 2]}
+            gl={{
+                antialias: true,
+            }}
+        >
+            <ShaderPlaneInner />
+        </Canvas>
+    );
 }
