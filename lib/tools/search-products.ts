@@ -3,12 +3,21 @@ import { getJson } from "serpapi";
 import { z } from "zod";
 
 export const inputSchema = z.object({
-  category: z.string().describe("The product category to search for, such as laptops or headphones."),
-  maxPrice: z.number().optional().describe("The maximum acceptable price for the product."),
+  category: z
+    .string()
+    .describe(
+      "The product category to search for, such as laptops or headphones.",
+    ),
+  maxPrice: z
+    .number()
+    .optional()
+    .describe("The maximum acceptable price in Indian rupees (INR)."),
   priorities: z
     .array(z.string())
     .optional()
-    .describe("The product qualities that matter most, such as battery life or budget."),
+    .describe(
+      "The product qualities that matter most, such as battery life or budget.",
+    ),
 });
 
 const MOCK_MODE = process.env.MOCK_MODE === "true";
@@ -17,7 +26,7 @@ const mockProducts = [
   {
     id: "laptop-air-14",
     name: "AeroBook Air 14",
-    price: 899,
+    price: 44999,
     category: "laptops",
     batteryLife: "18 hours",
     matchReasons: ["long battery life", "lightweight", "quiet keyboard"],
@@ -26,7 +35,7 @@ const mockProducts = [
   {
     id: "laptop-pro-16",
     name: "ForgeBook Pro 16",
-    price: 1499,
+    price: 59999,
     category: "laptops",
     batteryLife: "12 hours",
     matchReasons: ["high performance", "large display", "durable build"],
@@ -35,16 +44,20 @@ const mockProducts = [
   {
     id: "headphones-quiet",
     name: "QuietSound 700",
-    price: 299,
+    price: 2999,
     category: "headphones",
     batteryLife: "30 hours",
-    matchReasons: ["excellent noise cancellation", "long battery life", "comfortable fit"],
+    matchReasons: [
+      "excellent noise cancellation",
+      "long battery life",
+      "comfortable fit",
+    ],
     image: "https://images.unsplash.com/photo-1593642702749-b7d2a804fbcf",
   },
   {
     id: "headphones-pocket",
     name: "PocketBeat Wireless",
-    price: 99,
+    price: 1499,
     category: "headphones",
     batteryLife: "20 hours",
     matchReasons: ["budget friendly", "compact design", "balanced sound"],
@@ -53,7 +66,7 @@ const mockProducts = [
   {
     id: "phone-vision",
     name: "Vision X",
-    price: 799,
+    price: 24999,
     category: "phones",
     batteryLife: "24 hours",
     matchReasons: ["bright camera", "fast charging", "long battery life"],
@@ -62,7 +75,7 @@ const mockProducts = [
   {
     id: "phone-compact",
     name: "Mini One",
-    price: 499,
+    price: 14999,
     category: "phones",
     batteryLife: "20 hours",
     matchReasons: ["budget friendly", "compact design", "reliable performance"],
@@ -71,7 +84,8 @@ const mockProducts = [
 ] as const;
 
 type SearchProductsInput = z.infer<typeof inputSchema>;
-const RATE_LIMITED_MESSAGE = "Search is temporarily rate-limited, please try again in a moment";
+const RATE_LIMITED_MESSAGE =
+  "Search is temporarily rate-limited, please try again in a moment";
 
 function hasStatus429(value: unknown) {
   if (typeof value !== "object" || value === null) {
@@ -79,9 +93,13 @@ function hasStatus429(value: unknown) {
   }
 
   const record = value as Record<string, unknown>;
-  return [record.status, record.statusCode, record.httpStatus, record.http_status, record.code].some(
-    (status) => status === 429 || status === "429",
-  );
+  return [
+    record.status,
+    record.statusCode,
+    record.httpStatus,
+    record.http_status,
+    record.code,
+  ].some((status) => status === 429 || status === "429");
 }
 
 function isRateLimited(value: unknown) {
@@ -113,16 +131,14 @@ function isRateLimited(value: unknown) {
     return true;
   }
 
-  return (
-    typeof record.message === "string" && /\b429\b/.test(record.message)
-  );
+  return typeof record.message === "string" && /\b429\b/.test(record.message);
 }
 
-console.log(mockProducts);
 
 function mockExecute(input: SearchProductsInput) {
   const category = input.category.trim().toLowerCase();
-  const priorities = input.priorities?.map((priority) => priority.toLowerCase()) ?? [];
+  const priorities =
+    input.priorities?.map((priority) => priority.toLowerCase()) ?? [];
 
   const matchingProducts = mockProducts
     .filter(
@@ -137,15 +153,21 @@ function mockExecute(input: SearchProductsInput) {
         product.category,
         product.batteryLife,
         ...product.matchReasons,
-      ].join(" ").toLowerCase();
+      ]
+        .join(" ")
+        .toLowerCase();
       const priorityScore = priorities.reduce(
-        (score, priority) => score + (searchableText.includes(priority) ? 1 : 0),
+        (score, priority) =>
+          score + (searchableText.includes(priority) ? 1 : 0),
         0,
       );
 
       return { product, priorityScore, index };
     })
-    .sort((left, right) => right.priorityScore - left.priorityScore || left.index - right.index)
+    .sort(
+      (left, right) =>
+        right.priorityScore - left.priorityScore || left.index - right.index,
+    )
     .slice(0, 3)
     .map(({ product }) => ({ ...product, link: "" }));
 
@@ -159,16 +181,20 @@ async function execute(input: SearchProductsInput) {
 
   const category = input.category.trim();
   const maxPrice = input.maxPrice;
-  const priorities = input.priorities?.map((priority) => priority.trim()).filter(Boolean) ?? [];
+  const priorities =
+    input.priorities?.map((priority) => priority.trim()).filter(Boolean) ?? [];
   const query = [
     category,
     ...priorities,
-    maxPrice === undefined ? undefined : `under $${maxPrice}`,
+    maxPrice === undefined ? undefined : `under ₹${maxPrice}`,
   ]
     .filter(Boolean)
     .join(" ");
 
   try {
+
+    console.time("SerpApi search");
+
     const response = await getJson({
       api_key: process.env.SERPAPI_API_KEY,
       engine: "google_shopping",
@@ -178,12 +204,14 @@ async function execute(input: SearchProductsInput) {
       q: query,
     });
 
+    console.timeEnd("SerpApi search");
+
     if (isRateLimited(response)) {
       throw new Error(RATE_LIMITED_MESSAGE);
     }
 
-   console.log("Search query:", query);
-   console.log("Shopping results:", response.shopping_results?.slice(0, 1));
+    console.log("Search query:", query);
+    console.log("SERPAPI RESPONSE:", JSON.stringify(response, null, 2));
 
     const shoppingResults = Array.isArray(response.shopping_results)
       ? response.shopping_results
@@ -202,7 +230,9 @@ async function execute(input: SearchProductsInput) {
       throw new Error(`No products found for "${category}".`);
     }
     if (affordableResults.length === 0) {
-      throw new Error(`No products found for "${category}" within your budget.`);
+      throw new Error(
+        `No products found for "${category}" within your budget.`,
+      );
     }
 
     return {
@@ -228,11 +258,22 @@ async function execute(input: SearchProductsInput) {
         }
 
         return {
-          id: result.product_id ?? result.link ?? `${result.title ?? "product"}-${index}`,
+          id:
+            result.product_id ??
+            result.link ??
+            `${result.title ?? "product"}-${index}`,
           name: result.title ?? "Unnamed product",
-          price: Number.parseFloat(String(result.price ?? result.extracted_price ?? "0").replace(/[^\d.]/g, "")),
+          price: Number.parseFloat(
+            String(result.price ?? result.extracted_price ?? "0").replace(
+              /[^\d.]/g,
+              "",
+            ),
+          ),
           image: result.thumbnail ?? "",
-          batteryLife: result.battery_life ?? result.extracted_specs?.battery_life ?? "N/A",
+          batteryLife:
+            result.battery_life ??
+            result.extracted_specs?.battery_life ??
+            "N/A",
           matchReasons,
           link: result.product_link ?? result.link ?? "",
         };
@@ -243,13 +284,15 @@ async function execute(input: SearchProductsInput) {
       throw new Error(RATE_LIMITED_MESSAGE);
     }
 
-    const message = error instanceof Error ? error.message : "An unknown error occurred.";
+    const message =
+      error instanceof Error ? error.message : "An unknown error occurred.";
     throw new Error(`Product search failed: ${message}`);
   }
 }
 
 export const searchProductsTool = tool({
-  description: "Search the product catalog by category, budget, and the qualities the shopper prioritizes.",
+  description:
+    "Search Indian product listings by category, budget in INR, and the qualities the shopper prioritizes.",
   inputSchema,
   execute,
 });

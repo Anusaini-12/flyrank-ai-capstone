@@ -17,7 +17,7 @@ describe("ToolProductCard", () => {
     render(<ToolProductCard product={sampleProduct} />);
 
     expect(screen.getByRole("heading", { name: sampleProduct.name })).toBeInTheDocument();
-    expect(screen.getByText("$899")).toBeInTheDocument();
+    expect(screen.getByText("₹899")).toBeInTheDocument();
     expect(screen.getByText("long battery life")).toBeInTheDocument();
   });
 

@@ -73,7 +73,7 @@ export default function Home() {
   }: Parameters<React.ComponentProps<typeof BudgetFilter>["onSubmit"]>[0]) {
     const budgetMessage = maxPrice === undefined
       ? `I need ${category}`
-      : `I need ${category} under $${maxPrice}`;
+      : `I need ${category} under ₹${maxPrice}`;
 
     void sendMessage({ text: budgetMessage });
   }
@@ -82,7 +82,7 @@ export default function Home() {
     <main className="flex min-h-[calc(100dvh-73px)] w-full flex-col bg-background text-foreground md:h-[calc(100dvh-73px)] md:flex-row md:overflow-hidden">
 
       {/* Sidebar: Chat Panel */}
-      <aside className="flex h-[50dvh] w-full flex-col border-b border-border bg-card/50 md:h-full md:w-[350px] md:flex-shrink-0 md:border-b-0 md:border-r z-10 shadow-sm">
+      <aside className="flex h-[65dvh] w-full flex-col border-b border-border bg-card/50 md:h-full md:w-[350px] md:flex-shrink-0 md:border-b-0 md:border-r z-10 shadow-sm">
         <ChatPanel
           error={error}
           messages={messages}
@@ -100,11 +100,15 @@ export default function Home() {
           {/* Header */}
           <header className="mb-12 flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
             <div className="space-y-3">
+
+              <div className="hidden md:block">
               <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold tracking-wide text-primary">
                 <Sparkles className="size-3.5" />
                 Product Shortlist
               </div>
               <BudgetFilter onSubmit={handleBudgetFilterSubmit} />
+              </div>
+
               <h1 className="text-3xl font-semibold text-foreground sm:text-4xl lg:text-5xl">
                 Decision Board
               </h1>
@@ -170,7 +174,7 @@ export default function Home() {
 
                     <div className="mt-4 flex items-end justify-between gap-4">
                       <p className="text-3xl font-bold tracking-tight text-foreground">
-                        ${product.price.toLocaleString()}
+                        ₹{product.price.toLocaleString("en-IN")}
                       </p>
                       <span className="flex items-center gap-1.5 rounded-lg bg-muted/50 px-2.5 py-1 text-sm font-medium text-muted-foreground">
                         <BatteryCharging className="size-4 text-primary" />
@@ -246,7 +250,7 @@ export default function Home() {
                       </th>
                       {searchProducts.map((product) => (
                         <td className="px-6 py-4 font-semibold text-foreground" key={`${product.name}-price`}>
-                          ${product.price.toLocaleString()}
+                          ₹{product.price.toLocaleString("en-IN")}
                         </td>
                       ))}
                     </tr>

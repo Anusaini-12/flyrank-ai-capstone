@@ -28,7 +28,7 @@ export default function ToolProductCard({ product }: ToolProductCardProps) {
         </div>
 
         <p className="shrink-0 text-base font-bold text-primary">
-          ${product.price.toLocaleString()}
+          ₹{product.price.toLocaleString("en-IN")}
         </p>
       </div>
 

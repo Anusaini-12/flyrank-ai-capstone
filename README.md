@@ -6,23 +6,24 @@ An AI shopping agent built as part of the FlyRank AI Front-end AI Engineering tr
 
 ## Features
 
-- **Streaming AI chat** — real-time token-by-token responses via the AI SDK and OpenRouter (Claude), with a working stop button and multi-turn memory
-- **Real product search** — a `searchProducts` tool backed by SerpApi's Google Shopping engine (India-targeted), returning real prices, links, and images — never invented data
-- **Decision board** — product cards and a side-by-side comparison table, both driven live by the assistant's actual search results
-- **Accessible components built from scratch** — a hand-built Modal, Tabs, and Disclosure implementing the W3C ARIA Authoring Practices, compared against shadcn/ui in `app/playground/NOTES.md`
-- **Resilient error handling** — a root `error.tsx` boundary, a chat-level retry banner for failed messages, layout-matched loading skeletons, and designed empty states with clickable example prompts
-- **Motion Button demo** — a fully choreographed Send button (idle → loading → success/error → idle) with reduced-motion support
-- **3D product viewer** — an interactive React Three Fiber scene with a live material/color configurator
-- **Tested and CI-enforced** — Vitest + React Testing Library component tests, one Playwright end-to-end test (with the AI route mocked, never hitting the real API), and a GitHub Actions workflow that blocks merges on failure
+* **Streaming AI chat** — real-time token-by-token responses via the AI SDK and Google Gemini, with a working stop button and multi-turn memory
+* **Real product search** — a `searchProducts` tool backed by SerpApi's Google Shopping engine (India-targeted), returning real prices, links, and images — never invented data
+* **Decision board** — product cards and a side-by-side comparison table, both driven live by the assistant's actual search results
+* **Interactive shader hero** — a fragment-shader hero at `app/shader-hero` using `u_time`, `u_resolution`, and `u_mouse` uniforms, with capped device pixel ratio, tab-hidden pausing, and a static gradient fallback for `prefers-reduced-motion`
+* **Accessible components built from scratch** — a hand-built Modal, Tabs, and Disclosure implementing the W3C ARIA Authoring Practices, compared against shadcn/ui in `app/playground/NOTES.md`
+* **Resilient error handling** — a root `error.tsx` boundary, a chat-level retry banner for failed messages, layout-matched loading skeletons, and designed empty states with clickable example prompts
+* **Motion Button demo** — a fully choreographed Send button (idle → loading → success/error → idle) with reduced-motion support
+* **3D product viewer** — an interactive React Three Fiber scene with a live material/color configurator
+* **Tested and CI-enforced** — Vitest + React Testing Library component tests, one Playwright end-to-end test (with the AI route mocked, never hitting the real API), and a GitHub Actions workflow that blocks merges on failure
 
 ## Tech Stack
 
-- Next.js, React, TypeScript, Tailwind CSS
-- AI SDK + OpenRouter (Claude) for streaming chat and tool calling
-- SerpApi (Google Shopping) for real product data
-- shadcn/ui, React Three Fiber + drei + leva
-- Vitest, React Testing Library, Playwright
-- Vercel for deployment
+* Next.js, React, TypeScript, Tailwind CSS
+* AI SDK + Google Gemini for streaming chat and tool calling
+* SerpApi (Google Shopping) for real product data
+* shadcn/ui, React Three Fiber + drei + leva
+* Vitest, React Testing Library, Playwright
+* Vercel for deployment
 
 ## Getting Started
 
@@ -33,7 +34,7 @@ npm install
 Create `.env.local` with:
 
 ```text
-OPENROUTER_API_KEY=your-key-here
+GOOGLE_GENERATIVE_AI_API_KEY=your-key-here
 SERPAPI_API_KEY=your-key-here
 MOCK_MODE=false
 ```
@@ -72,6 +73,8 @@ flyrank-ai-capstone/
 │   │   ├── 3d-viewer/          # Interactive 3D product viewer
 │   │   └── motion-button/      # Motion button state-machine demo
 │   │
+│   ├── shader-hero/            # Interactive fragment-shader hero
+│   │
 │   ├── error.tsx               # Root error boundary
 │   └── ...
 │
@@ -108,17 +111,16 @@ flyrank-ai-capstone/
 └── README.md
 ```
 
-
 ## `searchProducts` Tool
 
 The `searchProducts` tool searches real product listings via SerpApi's Google Shopping engine (or a small mock dataset when `MOCK_MODE=true`), filtered by category, budget, and shopper priorities.
 
 ### Input Schema
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `category` | `string` | The product category to search for, such as laptops or headphones. |
-| `maxPrice` | `number` (optional) | The maximum acceptable price for the product. |
+| Field        | Type                  | Description                                                             |
+| ------------ | --------------------- | ----------------------------------------------------------------------- |
+| `category`   | `string`              | The product category to search for, such as laptops or headphones.      |
+| `maxPrice`   | `number` (optional)   | The maximum acceptable price for the product.                           |
 | `priorities` | `string[]` (optional) | The product qualities that matter most, such as battery life or budget. |
 
 ### Return Shape
@@ -139,6 +141,12 @@ The `searchProducts` tool searches real product listings via SerpApi's Google Sh
 
 Budget filtering happens in code against the real `extracted_price` returned by SerpApi, not just via the search query text. Rate-limit (429) responses are surfaced as a distinct error, separate from generic failures.
 
+## Shader Hero
+
+An interactive fragment-shader hero located at `app/shader-hero`. The shader uses `u_time`, `u_resolution`, and `u_mouse` uniforms to create a responsive visual effect.
+
+For performance, the shader caps the device pixel ratio and pauses rendering when the browser tab is hidden. When `prefers-reduced-motion` is enabled, it falls back to a static gradient instead of running the animation.
+
 ## 3D Model Viewer
 
 An interactive headphones product viewer built with React Three Fiber, with a live configurator (color, metalness, roughness, wireframe, auto-rotate) via leva.
@@ -153,7 +161,7 @@ Headphones 3D model by Ginsta, downloaded from Poly Pizza. Licensed under CC-BY.
 
 ## Status
 
-Core AI shopping flow, real product search, error handling, accessibility components, automated testing/CI, and supplementary interaction assignments (motion button, 3D viewer) are complete and deployed. See individual assignment notes in `app/playground/` for details on specific builds.
+Core AI shopping flow, real product search, error handling, accessibility components, automated testing/CI, and supplementary interaction assignments (motion button, shader hero, 3D viewer) are complete and deployed. See individual assignment notes in `app/playground/` for details on specific builds.
 
 ## License
 

@@ -1,11 +1,6 @@
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { google } from "@ai-sdk/google";
 
-const openrouter = createOpenRouter({
-  apiKey: process.env.OPENROUTER_API_KEY,
-});
-
-// The OpenRouter model used by the shopping assistant.
-export const MODEL = openrouter("openrouter/free");
+export const MODEL = google("gemini-3.6-flash");
 
 // The assistant's role and priorities when helping users shop.
 export const SYSTEM_PROMPT =
