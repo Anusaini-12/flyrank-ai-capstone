@@ -76,7 +76,7 @@ export async function POST(request: Request) {
     maxRetries: 0,
     maxOutputTokens: 800,
     tools: { searchProducts: searchProductsTool },
-    stopWhen: stepCountIs(3),
+    stopWhen: stepCountIs(1),
   });
 
   return result.toUIMessageStreamResponse();

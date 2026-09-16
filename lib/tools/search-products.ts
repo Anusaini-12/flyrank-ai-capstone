@@ -6,17 +6,21 @@ export const inputSchema = z.object({
   category: z
     .string()
     .describe(
-      "The product category to search for, such as laptops or headphones.",
+      "The product category ONLY. Examples: laptop, headphones, phone, shoes, watch, camera, TV, furniture, skincare, or any other product type. Never put budget, use case, features, preferences, or requirements in category.",
     ),
+
   maxPrice: z
     .number()
     .optional()
-    .describe("The maximum acceptable price in Indian rupees (INR)."),
+    .describe(
+      "The maximum acceptable price in Indian rupees (INR). Keep the budget separate from the category.",
+    ),
+
   priorities: z
     .array(z.string())
     .optional()
     .describe(
-      "The product qualities that matter most, such as battery life or budget.",
+      "The user's requirements, preferences, or use cases, such as coding, gaming, performance, reliability, battery life, comfort, camera quality, noise cancellation, or durability.",
     ),
 });
 
@@ -134,7 +138,6 @@ function isRateLimited(value: unknown) {
   return typeof record.message === "string" && /\b429\b/.test(record.message);
 }
 
-
 function mockExecute(input: SearchProductsInput) {
   const category = input.category.trim().toLowerCase();
   const priorities =
@@ -181,30 +184,28 @@ async function execute(input: SearchProductsInput) {
 
   const category = input.category.trim();
   const maxPrice = input.maxPrice;
-  const priorities =
-    input.priorities?.map((priority) => priority.trim()).filter(Boolean) ?? [];
+
   const query = [
     category,
-    ...priorities,
     maxPrice === undefined ? undefined : `under ₹${maxPrice}`,
   ]
     .filter(Boolean)
     .join(" ");
 
   try {
-
-    console.time("SerpApi search");
-
-    const response = await getJson({
-      api_key: process.env.SERPAPI_API_KEY,
-      engine: "google_shopping",
-      gl: "in",
-      hl: "en",
-      google_domain: "google.co.in",
-      q: query,
-    });
-
-    console.timeEnd("SerpApi search");
+    const response = await Promise.race([
+      getJson({
+        api_key: process.env.SERPAPI_API_KEY,
+        engine: "google_shopping",
+        gl: "in",
+        hl: "en",
+        google_domain: "google.co.in",
+        q: query,
+      }),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Search timed out")), 15000),
+      ),
+    ]);
 
     if (isRateLimited(response)) {
       throw new Error(RATE_LIMITED_MESSAGE);
@@ -292,7 +293,7 @@ async function execute(input: SearchProductsInput) {
 
 export const searchProductsTool = tool({
   description:
-    "Search Indian product listings by category, budget in INR, and the qualities the shopper prioritizes.",
+    "Search Indian product listings. Separate the user's request into category, maxPrice, and priorities. category must contain ONLY the product type. maxPrice contains the budget. priorities contains the user's requirements, preferences, or use cases. Example: 'laptop for coding with good performance under ₹50000' should use category='laptop', maxPrice=50000, priorities=['coding', 'performance'].",
   inputSchema,
   execute,
 });
