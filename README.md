@@ -4,9 +4,11 @@ An AI shopping agent built as part of the FlyRank AI Front-end AI Engineering tr
 
 **Live app:** https://flyrank-ai-capstone-anu.vercel.app/
 
-## Screenshots
+## Project Brief
 
-<!-- Add 2-3 real screenshots here before submitting: the chat + Decision board, the 3D viewer, the shader hero -->
+FlyRank AI is a conversational shopping assistant that helps people decide what to buy instead of just searching for it. A user describes their needs in plain language ("wireless headphones under ₹10,000 for travel, noise cancellation matters"), and the assistant asks clarifying questions, searches real product listings via Google Shopping, and explains _why_ each recommendation fits — rendering results as comparable cards and a side-by-side table, not a wall of text. It's built for anyone who finds product research overwhelming: too many tabs, too many specs, no clear "which one for me." I chose this idea because it's a genuine test of agentic AI patterns — tool-calling, structured output, real external data — rather than a chatbot wrapper that just echoes text back.
+
+## Screenshots
 
 ![Chat and Decision board](./screenshots/chat.png)
 ![Comparison](./screenshots/comparison.png)
@@ -25,6 +27,7 @@ An AI shopping agent built as part of the FlyRank AI Front-end AI Engineering tr
 - **3D product viewer** — an interactive React Three Fiber scene with a live material/color configurator
 - **Tested and CI-enforced** — Vitest + React Testing Library component tests, one Playwright end-to-end test (with the AI route mocked, never hitting the real API), and a GitHub Actions workflow that blocks merges on failure
 - **Production-hardened AI route** — rate limiting, input caps, and a bounded max duration on the streaming handler (see Production Hygiene below)
+- **Audited for accessibility** — Lighthouse mobile accessibility score of 100, zero WAVE errors (see Performance & Accessibility Audit below)
 
 ## Tech Stack
 
@@ -52,13 +55,13 @@ Visit `http://localhost:3000`.
 
 ### Environment Variables
 
-| Variable | Required | Where to get it |
-| --- | --- | --- |
-| `GOOGLE_GENERATIVE_AI_API_KEY` | Yes | [Google AI Studio](https://aistudio.google.com/app/apikey) — free tier |
-| `SERPAPI_API_KEY` | Yes (unless `MOCK_MODE=true`) | [SerpApi](https://serpapi.com) — free tier, ~250 searches/month |
-| `UPSTASH_REDIS_REST_URL` | Yes | [Upstash](https://upstash.com) — create a free Redis database |
-| `UPSTASH_REDIS_REST_TOKEN` | Yes | Same Upstash database, REST token |
-| `MOCK_MODE` | No (defaults to `false`) | Set to `true` to use built-in mock product data instead of calling SerpApi, useful for UI development without spending API quota |
+| Variable                       | Required                      | Where to get it                                                                                                                  |
+| ------------------------------ | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Yes                           | [Google AI Studio](https://aistudio.google.com/app/apikey) — free tier                                                           |
+| `SERPAPI_API_KEY`              | Yes (unless `MOCK_MODE=true`) | [SerpApi](https://serpapi.com) — free tier, ~250 searches/month                                                                  |
+| `UPSTASH_REDIS_REST_URL`       | Yes                           | [Upstash](https://upstash.com) — create a free Redis database                                                                    |
+| `UPSTASH_REDIS_REST_TOKEN`     | Yes                           | Same Upstash database, REST token                                                                                                |
+| `MOCK_MODE`                    | No (defaults to `false`)      | Set to `true` to use built-in mock product data instead of calling SerpApi, useful for UI development without spending API quota |
 
 ### Running tests
 
@@ -81,14 +84,12 @@ flyrank-ai-capstone/
 │   │   └── chat/
 │   │       └── route.ts        # Streaming AI chat + tool calling, rate-limited
 │   │
-│   ├── playground/
-│   │   ├── ...                 # Standalone UI experiments
-│   │   ├── 3d-viewer/          # Interactive 3D product viewer
-│   │   └── motion-button/      # Motion button state-machine demo
+│   ├── 3d-viewer/               # Interactive 3D product viewer
+│   ├── demo/                    # Motion button state-machine demo
+│   ├── shader-hero/             # Interactive fragment-shader hero
+│   ├── playground/              # Accessible components built from scratch (Modal, Tabs, Disclosure) + NOTES.md comparing to shadcn/ui
 │   │
-│   ├── shader-hero/            # Interactive fragment-shader hero
-│   │
-│   ├── error.tsx               # Root error boundary
+│   ├── error.tsx                # Root error boundary
 │   └── ...
 │
 ├── components/
@@ -107,19 +108,28 @@ flyrank-ai-capstone/
 │   ├── ai-config.ts            # AI model + system prompt configuration
 │   ├── rate-limit.ts           # Upstash sliding-window rate limiter
 │   └── tools/
-│       └── searchProducts.ts   # Product search tool
+│       └── search-products.ts  # Product search tool
 │
 ├── e2e/
 │   └── ...                     # Playwright tests
 │
 ├── public/
-│   └── models/
-│       └── headphones.glb      # 3D model asset
+│   ├── models/
+│   │   └── headphones.glb      # 3D model asset
+│   ├── docs/
+│   │   ├── lighthouse-before.png
+│   │   └── lighthouse-after.png
+│   └── screenshots/
+│       ├── chat.png
+│       ├── comparison.png
+│       ├── 3d.png
+│       └── shader-hero.png
 │
 ├── .github/
 │   └── workflows/
 │       └── ...                 # GitHub Actions CI
 │
+├── AUDIT.md                     # Accessibility & performance audit (before/after)
 ├── .env.local                  # Local secrets — not committed
 ├── package.json
 └── README.md
@@ -144,10 +154,10 @@ The `searchProducts` tool searches real product listings via SerpApi's Google Sh
 
 ### Input Schema
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `category` | `string` | The product category to search for, such as laptops or headphones. |
-| `maxPrice` | `number` (optional) | The maximum acceptable price for the product. |
+| Field        | Type                  | Description                                                             |
+| ------------ | --------------------- | ----------------------------------------------------------------------- |
+| `category`   | `string`              | The product category to search for, such as laptops or headphones.      |
+| `maxPrice`   | `number` (optional)   | The maximum acceptable price for the product.                           |
 | `priorities` | `string[]` (optional) | The product qualities that matter most, such as battery life or budget. |
 
 ### Return Shape
@@ -174,7 +184,21 @@ The `/api/chat` route is protected against casual abuse with three layers:
 
 1. **Rate limiting** — an Upstash Redis sliding-window limiter (20 requests/hour per IP) rejects excess requests with a 429 before the request ever reaches Gemini or SerpApi.
 2. **Input caps** — requests with more than 50 messages, or any single message over 2,000 characters, are rejected with a 400 before processing.
-3. **`maxDuration`** — the route is capped at 30 seconds to prevent a stuck request from running indefinitely.
+3. **`maxDuration`** — the route is capped at 30 seconds to prevent a stuck request from running indefinitely, with an internal 15-second timeout on the SerpApi call itself so a hung external API fails gracefully well before the hard cutoff.
+
+## Performance & Accessibility Audit
+
+Full before/after detail lives in [`AUDIT.md`](./AUDIT.md). Summary:
+
+| Metric                            | Before |                                   After |
+| --------------------------------- | -----: | --------------------------------------: |
+| Lighthouse Performance (mobile)   |     92 |                                      88 |
+| Lighthouse Accessibility (mobile) |     84 |                                 **100** |
+| WAVE Errors                       |      0 |                                   **0** |
+| WAVE Contrast Errors              |      0 |                                   **0** |
+| WAVE Alerts                       |      2 | 1 (reviewed and intentionally retained) |
+
+**One concrete improvement:** the empty-state heading `Awaiting your criteria` was demoted from `h3` to `h2`, fixing a skipped heading level under the page's `h1` — a WAVE-flagged issue that also directly improves screen reader navigation of the Decision board. Icon-only buttons (Send, logo) that lost their visible text label on mobile were given explicit `aria-label`s, and inactive nav items were changed from `text-muted-foreground` to `text-foreground` for stronger contrast. The primary flow, including the AI generation Stop button, was verified fully keyboard-reachable.
 
 ## Shader Hero
 
@@ -194,16 +218,41 @@ An interactive headphones product viewer built with React Three Fiber, with a li
 
 Headphones 3D model by Ginsta, downloaded from Poly Pizza. Licensed under CC-BY.
 
+## Known Limitations & Future Improvements
+
+**Limitations:** Product data comes from SerpApi's Google Shopping engine rather than direct Amazon/Flipkart integration, since both require affiliate approval gated behind sales volume or social-media following thresholds impractical for a new project. Free-tier API limits (SerpApi, and the LLM provider) mean heavy concurrent usage could hit rate limits despite the app's own rate limiting. The 3D product viewer currently ships with one preloaded model rather than per-product 3D assets. Match scoring is derived from real fields (rating, reviews, price) rather than a deeper recommendation algorithm. Cross-browser testing covers Chrome and Edge (Chromium engine); Firefox and Safari/mobile Safari have not yet been tested.
+
+**With more time:** I'd add a lightweight memory of user preferences across sessions, proper Amazon/Flipkart affiliate integration once eligible, drag-and-drop custom 3D model support, a more sophisticated ranking signal beyond keyword-priority matching, and complete the Firefox/Safari testing pass.
+
 ## Browser Testing
 
-<!-- Fill in your actual cross-browser pass results before submitting -->
+| Browser             | Status                                                                                                                                  |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Chrome (desktop)    | ✅ Full flow verified                                                                                                                   |
+| Edge (desktop)      | ✅ Verified (Chromium engine; one regular-profile issue traced to a local browser extension/cache, not reproducible in a clean profile) |
+| Firefox (desktop)   | [ ] Not yet tested                                                                                                                      |
+| Safari (desktop)    | [ ] Not yet tested                                                                                                                      |
+| Mobile Safari (iOS) | [ ] Not yet tested                                                                                                                      |
 
-| Browser | Status |
-| --- | --- |
-| Chrome (desktop) | ✅ Full flow verified |
-| Firefox (desktop) | [ ] |
-| Safari (desktop) | [ ] |
-| Mobile Safari (iOS) | [ ] |
+## Deployment Checklist
+
+**Environment & compatibility**
+
+- [x] Env vars set in Vercel (Gemini key, SerpApi key, Upstash rate-limit credentials) — verified none committed to git history
+- [x] `maxDuration` set on the streaming route (30s) with an internal timeout guard on external API calls
+- [ ] Full cross-browser pass (Chrome/Edge done; Firefox/Safari pending — see above)
+
+**Resilience & security**
+
+- [x] Rate limiting (Upstash, sliding window) and input-size caps protect the AI route from abuse
+- [x] Error boundaries (`error.tsx`), a chat-level retry banner, layout-matched skeletons, and designed empty states cover the failure surface
+- [x] No secrets in git history (verified via `git log`)
+
+**Rollback & monitoring**
+
+- **Rollback plan:** Vercel retains every previous deployment; a broken `main` can be reverted instantly via Vercel's "Promote to Production" on the last known-good deployment, or by reverting the offending commit and re-pushing.
+- **Monitoring:** Vercel's built-in function logs surface runtime errors — this is how the SerpApi timeout and rate-limit issues were actually caught during this project.
+- No dedicated uptime/alerting service is configured; acceptable for a portfolio-scale project, noted as a gap for a real production service.
 
 ## How AI Tools Built This
 
@@ -216,9 +265,17 @@ This project was built almost entirely through prompting GitHub Copilot for impl
 
 Where I made the calls: visual/UX direction (several full redesigns — teal → pink → sage — before landing on the current theme), which product data source to integrate and why, when mock data vs. real API calls made sense, and every accessibility and error-handling requirement's actual behavior (each was manually tested, not just assumed correct because the code compiled). Where AI did the heavy lifting: writing the implementation for each of those decisions once specified, and generating first-pass fixes for bugs that I then verified by re-testing, not just re-reading the diff.
 
+## Reflection
+
+The hardest part wasn't any single bug — it was the number of times a fix in one place quietly broke something else: moving `frontend/` to the repo root broke Vercel's build until I updated the Root Directory setting; switching from OpenRouter to Gemini meant re-checking every file that referenced the old provider, including docs I'd already written. The real lesson was that in an AI-assisted workflow, _reviewing_ what the assistant generates matters more than writing code yourself — the most serious bug I shipped wasn't a syntax error, it was the model hallucinating laptop specs (RAM, processor) that didn't exist anywhere in the real SerpApi data I'd fetched. That one only surfaced because I actually read the assistant's response against the raw API data, not because any test caught it.
+
+What surprised me most: a Server Component silently self-fetching its own API route during Vercel's build step (before the app was even live) taught me more about how Next.js actually works than any tutorial had — that class of bug simply doesn't exist in a simpler request/response app.
+
+Next time, I'd write the resilience/error-handling pass earlier, not as a dedicated late-stage assignment — several of the bugs I found while deliberately "sabotaging" my own app (mid-stream failures, rate limits) had clearly been silently possible since the very first version of the chat feature.
+
 ## Status
 
-Core AI shopping flow, real product search, error handling, accessibility components, automated testing/CI, production hygiene, and supplementary interaction assignments (motion button, shader hero, 3D viewer) are complete and deployed.
+Core AI shopping flow, real product search, error handling, accessibility components, automated testing/CI, production hygiene, and supplementary interaction assignments (the demo motion button, shader hero, 3D viewer) are complete and deployed. See individual assignment notes in `app/playground/` for details on specific builds, and [`AUDIT.md`](./AUDIT.md) for the full accessibility/performance audit.
 
 ## License
 
