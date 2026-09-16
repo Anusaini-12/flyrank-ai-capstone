@@ -70,6 +70,10 @@ npm run test          # Vitest component tests
 npx playwright test   # end-to-end test
 ```
 
+### CI Status
+
+![CI passing — 3 test files, 8/8 tests](./screenshots/ci-tests-passing.png)
+
 ## Project Structure
 
 ```text
